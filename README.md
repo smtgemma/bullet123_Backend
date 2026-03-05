@@ -383,9 +383,3 @@ The application includes comprehensive error handling and logging for debugging 
 ## License
 
 This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-**Sk Shariful Islam**
-
-- Email: sharifulisl96@gmail.com

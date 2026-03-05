@@ -232,7 +232,6 @@ const otpGenerate = async (email: string) => {
   create: { email },
 });
 
-  // Professional email template
   const emailContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -725,7 +724,6 @@ export const refreshToken = async (token: string) => {
 export const AuthService = {
   getMe,
   loginUser,
-
   refreshToken,
   resetPassword,
   changePassword,

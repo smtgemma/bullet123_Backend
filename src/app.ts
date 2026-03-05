@@ -22,10 +22,14 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/v1", router);
 
 app.get("/", async (req: Request, res: Response) => {
-	// 
-	res.send("API is running...");
+  res.status(200).json({
+    success: true,
+    message: "🚀 Bullet Backend API is running!",
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+    docs: "/api/v1",
+  });
 });
-
 
 app.use(globalErrorHandler);
 app.use(notFound);

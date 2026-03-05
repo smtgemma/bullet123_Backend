@@ -43,7 +43,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             
-            cd /var/www/art-hub
+            cd /var/www/bullet123_Backend
             git pull origin main
             npm install --production
             npx prisma generate
