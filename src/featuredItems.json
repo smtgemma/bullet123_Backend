@@ -1,0 +1,64 @@
+{
+  "featuredItems": [
+    {
+      "name": "Artwork Slots",
+      "key": "artwork_slots",
+      "type": "LIMIT",
+      "active": true
+    },
+    {
+      "name": "Storage Limit",
+      "key": "storage_limit",
+      "type": "STORAGE",
+      "active": true
+    },
+    {
+      "name": "Draft Mode Only",
+      "key": "draft_mode_only",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Public Live Profile",
+      "key": "public_live_profile",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Personal Dashboard Access",
+      "key": "personal_dashboard",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "SEO-Optimized Gallery",
+      "key": "seo_gallery",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Newsletter Eligibility",
+      "key": "newsletter_eligibility",
+      "type": "MARKETING",
+      "active": true
+    },
+    {
+      "name": "Featured Artist Badge",
+      "key": "featured_artist_badge",
+      "type": "BADGE",
+      "active": true
+    },
+    {
+      "name": "Homepage Artist Spotlight",
+      "key": "homepage_spotlight",
+      "type": "SPOTLIGHT",
+      "active": true
+    },
+     {
+      "name": "File Size Limit",
+      "key": "file_size_limit",
+      "type": "STORAGE",
+      "active": true
+    }
+  ]
+}
