@@ -31,6 +31,7 @@ model User {
   Profile                   Profile?
   Subscription              Subscription[]
   review Review[]
+   meetings    Meeting[]
   
   @@map("users")
 }
@@ -196,6 +197,40 @@ model Review {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+
+model Meeting {
+  id            String        @id @default(uuid())
+  userId        String
+  organizationId String?
+  
+  zoomMeetingId String?       @unique
+  joinUrl       String?
+  startUrl      String?
+  password      String?
+ 
+  topic         String
+  startTime     DateTime
+  duration      Int          
+  timezone      String        @default("Asia/Dhaka")
+  status        MeetingStatus @default(SCHEDULED)
+  
+
+  calendarEventId String?     
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("meetings")
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
 
 model Subscriber {
   id          String   @id @default(uuid())
