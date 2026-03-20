@@ -7,32 +7,28 @@ datasource db {
 }
 
 model User {
-  id                        String              @id @default(uuid())
-  fullName                  String
-  email                     String              @unique
-  password                  String
-  profilePic                String?
-  passwordChangedAt         DateTime?
-  isVerified                Boolean             @default(false)
-  isResetPassword           Boolean             @default(false)
-  canResetPassword          Boolean             @default(false)
-  isResentOtp               Boolean             @default(false)
-  role                      UserRole            @default(USER)
-  isSubscribed              Boolean             @default(false)
-  planExpiration            DateTime?
-  lastActiveAt              DateTime?
-  createdAt                 DateTime            @default(now())
-  updatedAt                 DateTime            @updatedAt
-  resetPasswordOTP          String?
-  stripeCustomerId           String?
-  resetPasswordOTPExpiresAt DateTime?
-  isDeleted                 Boolean  @default(false)
-  Notifications             Notification[]
-  Profile                   Profile?
-  Subscription              Subscription[]
-  review Review[]
-   meetings    Meeting[]
-  
+  id                String         @id @default(uuid())
+  fullName          String
+  email             String         @unique
+  password          String
+  profilePic        String?
+  passwordChangedAt DateTime?
+  isVerified        Boolean        @default(false)
+  role              UserRole       @default(USER)
+  isSubscribed      Boolean        @default(false)
+  planExpiration    DateTime?
+  lastActiveAt      DateTime?
+  stripeCustomerId  String?
+  isDeleted         Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  Notifications Notification[]
+  Profile       Profile?
+  Subscription  Subscription[]
+  review        Review[]
+  meetings      Meeting[]
+
   @@map("users")
 }
 model FeaturedItem {

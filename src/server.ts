@@ -6,15 +6,18 @@ import { connectRedis } from "./app/config/redis";
 import { seedFeaturedItems } from "./app/utils/seedFeaturedItems";
 import { startSubscriptionCronJobs } from "./app/modules/subscription/subscription.service";
 
-
 let server: Server;
 
 const main = async () => {
   try {
- await seedSuperAdmin();
-await seedFeaturedItems();
+    // Connect Redis first
+    await connectRedis();
 
-startSubscriptionCronJobs();
+    await seedSuperAdmin();
+    await seedFeaturedItems();
+
+    startSubscriptionCronJobs();
+
     server = app.listen(config.port, () => {
       console.log(
         `🚀 App is listening on: http://${config.host}:${config.port}`
@@ -28,9 +31,8 @@ startSubscriptionCronJobs();
 
 main();
 
-
 const shutdown = () => {
-  console.log("🛑 Shutting down servers...");
+  console.log("Shutting down servers...");
   if (server) {
     server.close(() => {
       console.log("Servers closed");
@@ -42,11 +44,11 @@ const shutdown = () => {
 };
 
 process.on("unhandledRejection", () => {
-  console.log(`❌ unhandledRejection is detected, shutting down...`);
+  console.log(`unhandledRejection is detected, shutting down...`);
   shutdown();
 });
 
 process.on("uncaughtException", () => {
-  console.log(`❌ uncaughtException is detected, shutting down...`);
+  console.log(`uncaughtException is detected, shutting down...`);
   shutdown();
 });

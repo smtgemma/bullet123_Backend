@@ -2,10 +2,70 @@ import status from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
-import config from "../../config";
 
+// ── Register ───────────────────────────────────────────────────────────────
+const register = catchAsync(async (req, res) => {
+  const { fullName, email, password, profilePic,role } = req.body;
 
+  const result = await AuthService.register({
+    fullName,
+    email,
+    password,
+    profilePic,
+    role,
+  });
 
+  sendResponse(res, {
+    statusCode: status.CREATED,
+    message: result.message,
+  });
+});
+
+// ── Verify OTP ─────────────────────────────────────────────────────────────
+const verifyOTP = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  if (!otp) {
+    return res.status(400).json({ message: "OTP is required" });
+  }
+
+  const result = await AuthService.verifyOTP(email, otp);
+
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 365 * 24 * 60 * 60 * 1000,
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+    data: { accessToken: result.accessToken },
+  });
+});
+
+// ── Resend Email Verification OTP ──────────────────────────────────────────
+const resendEmailVerificationOtp = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const result = await AuthService.resendEmailVerificationOtp(email);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+  });
+});
+
+// ── Login ──────────────────────────────────────────────────────────────────
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
@@ -15,9 +75,9 @@ const login = catchAsync(async (req, res) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false, // config.NODE_ENV === "production"
-    sameSite: "lax", // config.NODE_ENV === "production" ? true : "lax",
-    maxAge: 24 * 60 * 60 * 1000,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 365 * 24 * 60 * 60 * 1000,
   });
 
   sendResponse(res, {
@@ -27,26 +87,23 @@ const login = catchAsync(async (req, res) => {
   });
 });
 
+// ── Change Password ────────────────────────────────────────────────────────
 const changePassword = catchAsync(async (req, res) => {
   const email = req.user?.email as string;
-
   const { currentPassword, newPassword, confirmPassword } = req.body;
 
-  await AuthService.changePassword(
-    email,
-    currentPassword,
-    newPassword,
-    confirmPassword
-  );
+  await AuthService.changePassword(email, currentPassword, newPassword, confirmPassword);
 
   sendResponse(res, {
     statusCode: status.OK,
-    message: "User password changed successfully!",
+    message: "Password changed successfully!",
   });
 });
 
+// ── Forgot Password ────────────────────────────────────────────────────────
 const forgotPassword = catchAsync(async (req, res) => {
   const { email } = req.body;
+
   const result = await AuthService.forgotPassword(email);
 
   sendResponse(res, {
@@ -55,14 +112,11 @@ const forgotPassword = catchAsync(async (req, res) => {
   });
 });
 
-const resetPassword = catchAsync(async (req, res) => {
-  const { email, newPassword, confirmPassword } = req.body;
+// ── Verify Reset Password OTP ──────────────────────────────────────────────
+const verifyResetPasswordOTP = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
 
-  const result = await AuthService.resetPassword(
-    email,
-    newPassword,
-    confirmPassword
-  );
+  const result = await AuthService.verifyResetPasswordOTP(email, otp);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -70,7 +124,35 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
+// ── Resend Reset Password OTP ──────────────────────────────────────────────
+const resendResetPasswordOtp = catchAsync(async (req, res) => {
+  const { email } = req.body;
 
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const result = await AuthService.resendResetPasswordOtp(email);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+  });
+});
+
+// ── Reset Password ─────────────────────────────────────────────────────────
+const resetPassword = catchAsync(async (req, res) => {
+  const { email, newPassword, confirmPassword } = req.body;
+
+  const result = await AuthService.resetPassword(email, newPassword, confirmPassword);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+  });
+});
+
+// ── Get Me ─────────────────────────────────────────────────────────────────
 const getMe = catchAsync(async (req, res) => {
   const email = req.user?.email as string;
 
@@ -83,6 +165,7 @@ const getMe = catchAsync(async (req, res) => {
   });
 });
 
+// ── Refresh Token ──────────────────────────────────────────────────────────
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
@@ -90,72 +173,21 @@ const refreshToken = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: status.OK,
-    message: "Access token is retrieved successfully!",
+    message: "Access token retrieved successfully!",
     data: result,
   });
 });
 
-
-const verifyResetPasswordOTP = catchAsync(async (req, res) => {
-  const { email, otp } = req.body;
-  await AuthService.verifyResetPasswordOTP(email, otp);
-  sendResponse(res, {
-    statusCode: status.OK,
-    message: "OTP verified successfully! You can now reset your password.",
-  });
-});
-
-const otpGenerate=catchAsync(async(req,res)=>{
-
-    const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-
-  const result=await AuthService.otpGenerate(email)
-
-  sendResponse(res,{
-  statusCode:status.OK,
-  message: "We have sent a 6-digit verification code to your email address. Please check your inbox and use the code to complete verification.",
-  })
-})
-const otpVerify=catchAsync(async(req,res)=>{
-
-    const {otpCode,data} = req.body;
-
-console.log(req.body)
-  if (!data.email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-  if (!data.password) {
-    return res.status(400).json({ message: "Password is required" });
-  }
-
-  const result=await AuthService.verifyOTP(otpCode,data)
-
-  sendResponse(res,{
-  statusCode:status.OK,
-  message: "Email verification completed successfully! Your account is now verified.",
-  data:result
-  })
-})
-
-
-
-
-
 export const AuthController = {
+  register,
+  verifyOTP,
+  resendEmailVerificationOtp,
   login,
   getMe,
- 
   refreshToken,
   resetPassword,
   forgotPassword,
   changePassword,
   verifyResetPasswordOTP,
- otpGenerate,
- otpVerify,
-
-
+  resendResetPasswordOtp,
 };

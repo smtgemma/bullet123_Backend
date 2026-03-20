@@ -5,24 +5,30 @@ import validateRequest from "../../middlewares/validateRequest";
 import { AuthController } from "./auth.controller";
 import { AuthValidation } from "./auth.validation";
 
-
 const router = Router();
 
+// ── Registration ───────────────────────────────────────────────────────────
+router.post("/register", AuthController.register);
 
-router.post('/register-user',AuthController.otpGenerate
-)
+router.post("/verify-otp", AuthController.verifyOTP);
 
-router.post('/verify-otp',AuthController.otpVerify
-)
+router.post("/resend-otp", AuthController.resendEmailVerificationOtp);
 
+// ── Auth ───────────────────────────────────────────────────────────────────
 router.post(
   "/login",
   validateRequest(AuthValidation.loginValidationSchema),
   AuthController.login
 );
+
+router.get("/me", auth(), AuthController.getMe);
+
+router.post("/refresh-token", AuthController.refreshToken);
+
+// ── Password ───────────────────────────────────────────────────────────────
 router.put(
   "/change-password",
-  auth(UserRole.USER, UserRole.ADMIN,UserRole.SUPER_ADMIN),
+  auth(UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(AuthValidation.changePasswordValidationSchema),
   AuthController.changePassword
 );
@@ -33,16 +39,12 @@ router.post(
   AuthController.forgotPassword
 );
 
+
+
+router.post("/verify-reset-password-otp", AuthController.verifyResetPasswordOTP);
+
+router.post("/resend-reset-password-otp", AuthController.resendResetPasswordOtp);
+
 router.post("/reset-password", AuthController.resetPassword);
 
-router.post(
-  "/verify-reset-password-otp",
-  AuthController.verifyResetPasswordOTP
-);
-
-router.get("/me", auth(), AuthController.getMe);
-
-router.post("/refresh-token", AuthController.refreshToken);
-
 export const AuthRoutes = router;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
