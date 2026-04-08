@@ -81,18 +81,7 @@ const getAllAdminFromDB = async (query: Record<string, unknown>) => {
         plan: true,
       },
     },
-    purchases: {
-      where: {
-        isActive: true,
-        paymentStatus: "COMPLETED",
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        package: true, 
-      },
-    },
+  
   };
 
   const queryBuilder = new QueryBuilder(prisma.user, query)
