@@ -11,20 +11,13 @@ import { imageUpload } from "../../config/multer-config";
 
 const router = Router();
 
-router.get(
-  "/",
-  UserController.getAllUser
-);
-router.get(
-  "/admin/get-all",
-  UserController.getAllUsers
-);
+router.get("/", UserController.getAllUser);
+router.get("/admin/get-all", UserController.getAllUsers);
 router.get(
   "/:userId",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN,UserRole.USER),
-  UserController.getSingleUserById
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER),
+  UserController.getSingleUserById,
 );
-
 
 router.patch(
   "/update",
@@ -35,14 +28,15 @@ router.patch(
       if (req.body?.data) {
         req.body = JSON.parse(req.body.data);
       }
-      next();8
+      next();
+      8;
     } catch {
       next(new ApiError(status.BAD_REQUEST, "Invalid JSON in 'data' field"));
     }
   },
   auth(),
   validateRequest(UserValidation.updateUserValidationSchema),
-  UserController.updateUser
+  UserController.updateUser,
 );
 
 router.patch(
@@ -60,40 +54,34 @@ router.patch(
     }
   },
   auth(),
-  UserController.updateUserProfile
+  UserController.updateUserProfile,
 );
 
 router.delete(
   "/:userId",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  UserController.deleteUser
+  UserController.deleteUser,
 );
 
-
-router.delete(
-  "/delete/me",
-  auth(),
-  UserController.deleteMe
-);
+router.delete("/delete/me", auth(), UserController.deleteMe);
 
 router.patch(
   "/chenge/role/:id",
   auth(UserRole.SUPER_ADMIN),
-  UserController.chengeUserRoleIntoDB
+  UserController.chengeUserRoleIntoDB,
 );
 
 router.post(
   "/invite-admin",
   auth(UserRole.SUPER_ADMIN),
 
-  UserController.inviteUserToAdmin
+  UserController.inviteUserToAdmin,
 );
 router.get(
   "/get-all/admin",
-  auth(UserRole.SUPER_ADMIN,UserRole.ADMIN
-  ),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
 
-  UserController.getAllAdminFromDB
+  UserController.getAllAdminFromDB,
 );
 
 export const UserRoutes = router;

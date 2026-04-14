@@ -66,7 +66,11 @@ const buildOtpEmail = (email: string, otp: string): string => `
 </html>`;
 
 // ── Reset OTP Email Template ───────────────────────────────────────────────
-const buildResetOtpEmail = (fullName: string, email: string, otp: string): string => `
+const buildResetOtpEmail = (
+  fullName: string,
+  email: string,
+  otp: string,
+): string => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,7 +119,7 @@ interface RegisterPayload {
   email: string;
   password: string;
   profilePic?: string;
-  role:UserRole
+  role: UserRole;
 }
 
 const register = async (payload: RegisterPayload) => {
@@ -128,7 +132,7 @@ const register = async (payload: RegisterPayload) => {
   if (isUserExistByEmail?.isDeleted) {
     throw new AppError(
       status.FORBIDDEN,
-      "Your account has been deleted. Please contact support."
+      "Your account has been deleted. Please contact support.",
     );
   }
 
@@ -138,7 +142,7 @@ const register = async (payload: RegisterPayload) => {
     if (existingOtp) {
       throw new ApiError(
         status.CONFLICT,
-        "Please check your inbox and verify your email."
+        "Please check your inbox and verify your email.",
       );
     }
     // OTP expired → send new OTP
@@ -148,11 +152,11 @@ const register = async (payload: RegisterPayload) => {
     await sendEmail(
       normalizedEmail,
       "🔐 Email Verification Code - Action Required",
-      emailContent
+      emailContent,
     );
     throw new ApiError(
       status.CONFLICT,
-      "Please check your inbox and verify your email."
+      "Please check your inbox and verify your email.",
     );
   }
 
@@ -171,7 +175,7 @@ const register = async (payload: RegisterPayload) => {
         password: hashedPassword,
         profilePic: payload.profilePic,
         isVerified: false,
-        role:payload.role
+        role: payload.role,
       },
     });
 
@@ -190,7 +194,7 @@ const register = async (payload: RegisterPayload) => {
   await sendEmail(
     normalizedEmail,
     "🔐 Email Verification Code - Action Required",
-    emailContent
+    emailContent,
   );
 
   return {
@@ -211,7 +215,9 @@ const verifyOTP = async (email: string, otpCode: string) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
 
   if (!user) {
     throw new ApiError(status.NOT_FOUND, "User not found!");
@@ -227,14 +233,14 @@ const verifyOTP = async (email: string, otpCode: string) => {
   if (!cachedOtp) {
     throw new ApiError(
       status.NOT_FOUND,
-      "OTP not found or expired. Please request a new OTP."
+      "OTP not found or expired. Please request a new OTP.",
     );
   }
 
   if (cachedOtp !== otpCode.trim()) {
     throw new ApiError(
       status.UNAUTHORIZED,
-      "Invalid OTP. Please check the code and try again."
+      "Invalid OTP. Please check the code and try again.",
     );
   }
 
@@ -269,13 +275,13 @@ const verifyOTP = async (email: string, otpCode: string) => {
   const accessToken = jwtHelpers.createToken(
     jwtPayload,
     config.jwt.access.secret as string,
-    config.jwt.access.expiresIn as string
+    config.jwt.access.expiresIn as string,
   );
 
   const refreshToken = jwtHelpers.createToken(
     jwtPayload,
     config.jwt.refresh.secret as string,
-    config.jwt.refresh.expiresIn as string
+    config.jwt.refresh.expiresIn as string,
   );
 
   // Send success email (non-blocking)
@@ -290,9 +296,11 @@ const verifyOTP = async (email: string, otpCode: string) => {
       </div>
     </div>`;
 
-  sendEmail(normalizedEmail, "Email Verified Successfully!", successEmailContent).catch(
-    (err) => console.error("Failed to send success email:", err)
-  );
+  sendEmail(
+    normalizedEmail,
+    "Email Verified Successfully!",
+    successEmailContent,
+  ).catch((err) => console.error("Failed to send success email:", err));
 
   return {
     message: "Email verified successfully.",
@@ -306,10 +314,13 @@ const resendEmailVerificationOtp = async (email: string) => {
   if (!email) throw new ApiError(status.BAD_REQUEST, "Email is required");
 
   const normalizedEmail = email.toLowerCase().trim();
-  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
 
   if (!user) throw new ApiError(status.NOT_FOUND, "User not found");
-  if (user.isVerified) throw new ApiError(status.BAD_REQUEST, "User is already verified.");
+  if (user.isVerified)
+    throw new ApiError(status.BAD_REQUEST, "User is already verified.");
 
   // Delete old OTP and create new one
   await redisClient.del(`otp:${normalizedEmail}`);
@@ -320,7 +331,7 @@ const resendEmailVerificationOtp = async (email: string) => {
   await sendEmail(
     normalizedEmail,
     "🔐 Email Verification Code - Action Required",
-    emailContent
+    emailContent,
   );
 
   return { message: "OTP resent successfully. Please check your email." };
@@ -335,7 +346,7 @@ const loginUser = async (email: string, password: string) => {
   if (user.isDeleted) {
     throw new AppError(
       status.FORBIDDEN,
-      "Your account has been deleted. Please contact support."
+      "Your account has been deleted. Please contact support.",
     );
   }
 
@@ -344,17 +355,21 @@ const loginUser = async (email: string, password: string) => {
     if (existingOtp) {
       throw new ApiError(
         status.UNAUTHORIZED,
-        "Please verify your email first. Check your inbox."
+        "Please verify your email first. Check your inbox.",
       );
     }
     // OTP expired → send new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await redisClient.setEx(`otp:${email}`, 600, otp);
     const emailContent = buildOtpEmail(email, otp);
-    await sendEmail(email, "🔐 Email Verification Code - Action Required", emailContent);
+    await sendEmail(
+      email,
+      "🔐 Email Verification Code - Action Required",
+      emailContent,
+    );
     throw new ApiError(
       status.UNAUTHORIZED,
-      "Your OTP has expired. A new OTP has been sent to your email."
+      "Your OTP has expired. A new OTP has been sent to your email.",
     );
   }
 
@@ -362,7 +377,7 @@ const loginUser = async (email: string, password: string) => {
   if (!isPasswordMatched) {
     throw new ApiError(
       status.UNAUTHORIZED,
-      "Invalid email and password. Please try again!"
+      "Invalid email and password. Please try again!",
     );
   }
 
@@ -379,13 +394,13 @@ const loginUser = async (email: string, password: string) => {
   const accessToken = jwtHelpers.createToken(
     jwtPayload,
     config.jwt.access.secret as string,
-    config.jwt.access.expiresIn as string
+    config.jwt.access.expiresIn as string,
   );
 
   const refreshToken = jwtHelpers.createToken(
     jwtPayload,
     config.jwt.refresh.secret as string,
-    config.jwt.refresh.expiresIn as string
+    config.jwt.refresh.expiresIn as string,
   );
 
   return { accessToken, refreshToken };
@@ -396,18 +411,20 @@ const changePassword = async (
   email: string,
   currentPassword: string,
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) throw new ApiError(status.NOT_FOUND, "User not found!");
-  if (!newPassword) throw new ApiError(status.BAD_REQUEST, "New password is required!");
-  if (!confirmPassword) throw new ApiError(status.BAD_REQUEST, "Confirm password is required!");
+  if (!newPassword)
+    throw new ApiError(status.BAD_REQUEST, "New password is required!");
+  if (!confirmPassword)
+    throw new ApiError(status.BAD_REQUEST, "Confirm password is required!");
 
   if (newPassword !== confirmPassword) {
     throw new ApiError(
       status.BAD_REQUEST,
-      "New password and confirm password do not match!"
+      "New password and confirm password do not match!",
     );
   }
 
@@ -459,7 +476,7 @@ const verifyResetPasswordOTP = async (email: string, otp: string) => {
   if (!cachedOtp) {
     throw new ApiError(
       status.BAD_REQUEST,
-      "OTP not found or expired. Please request a new OTP."
+      "OTP not found or expired. Please request a new OTP.",
     );
   }
 
@@ -470,7 +487,9 @@ const verifyResetPasswordOTP = async (email: string, otp: string) => {
   await redisClient.del(`reset-otp:${email}`);
   await redisClient.setEx(`can-reset:${email}`, 600, "true");
 
-  return { message: "OTP verified successfully. You can now reset your password." };
+  return {
+    message: "OTP verified successfully. You can now reset your password.",
+  };
 };
 
 // ── Resend Reset Password OTP ──────────────────────────────────────────────
@@ -494,7 +513,7 @@ const resendResetPasswordOtp = async (email: string) => {
 const resetPassword = async (
   email: string,
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) => {
   if (newPassword !== confirmPassword) {
     throw new ApiError(status.BAD_REQUEST, "Passwords do not match!");
@@ -505,7 +524,10 @@ const resetPassword = async (
 
   const canReset = await redisClient.get(`can-reset:${email}`);
   if (!canReset) {
-    throw new ApiError(status.BAD_REQUEST, "User is not eligible for password reset!");
+    throw new ApiError(
+      status.BAD_REQUEST,
+      "User is not eligible for password reset!",
+    );
   }
 
   const hashedPassword = await hashPassword(newPassword);
@@ -545,7 +567,7 @@ const getMe = async (email: string) => {
 export const refreshToken = async (token: string) => {
   const decoded = jwtHelpers.verifyToken(
     token,
-    config.jwt.refresh.secret as string
+    config.jwt.refresh.secret as string,
   ) as RefreshPayload;
 
   const { email, iat } = decoded;
@@ -571,7 +593,7 @@ export const refreshToken = async (token: string) => {
   ) {
     throw new ApiError(
       status.UNAUTHORIZED,
-      "Password was changed after this token was issued"
+      "Password was changed after this token was issued",
     );
   }
 
@@ -587,7 +609,7 @@ export const refreshToken = async (token: string) => {
   const accessToken = jwtHelpers.createToken(
     jwtPayload,
     config.jwt.access.secret as string,
-    config.jwt.access.expiresIn as string
+    config.jwt.access.expiresIn as string,
   );
 
   return { accessToken };
