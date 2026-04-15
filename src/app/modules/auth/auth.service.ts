@@ -154,9 +154,11 @@ const register = async (payload: RegisterPayload) => {
       "🔐 Email Verification Code - Action Required",
       emailContent,
     );
+
+    // provide better message for unverified users
     throw new ApiError(
       status.CONFLICT,
-      "Please check your inbox and verify your email.",
+      "A user with this email already exists but is not verified. A new OTP has been sent to your email. Please verify your account.",
     );
   }
 

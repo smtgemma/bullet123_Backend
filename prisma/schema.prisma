@@ -18,119 +18,98 @@ model User {
   isSubscribed      Boolean        @default(false)
   planExpiration    DateTime?
   lastActiveAt      DateTime?
-  stripeCustomerId  String?
-  isDeleted         Boolean        @default(false)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-
-  Notifications Notification[]
-  Profile       Profile?
-  Subscription  Subscription[]
-  review        Review[]
-  meetings      Meeting[]
+  stripeCustomerId  String?
+  isDeleted         Boolean        @default(false)
+  Notifications     Notification[]
+  Profile           Profile?
+  review            Review[]
+  meetings          Meeting[]
+  Subscription      Subscription[]
 
   @@map("users")
 }
+
 model FeaturedItem {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  key         String   @unique
-  type        FeaturedType
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id           String             @id @default(uuid())
+  name         String             @unique
+  key          String             @unique
+  type         FeaturedType
+  active       Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
   planFeatures PlanFeaturedItem[]
 
   @@map("featured_items")
 }
 
 model PlanFeaturedItem {
-  id             String   @id @default(uuid())
+  id             String       @id @default(uuid())
   planId         String
   featuredItemId String
-  limit          Int?     
-  value          String?  
-  
-  plan           Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  limit          Int?
+  value          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   featuredItem   FeaturedItem @relation(fields: [featuredItemId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  plan           Plan         @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@unique([planId, featuredItemId])
   @@map("plan_featured_items")
 }
 
 model Plan {
-  id            String         @id @default(uuid())
-  planName      String         @unique
-  price         Float
-  planType      PlanType       @default(FREE)
-  currency      String         @default("USD")
-  interval      Interval       @default(month)
-   intervalCount  Int            @default(1)
-  productId     String         @unique
-  priceId       String         @unique
-  
-  active        Boolean        @default(true)
-  description   String
-  
- discountType      DiscountType?      
-  discountValue     Float?             
-  discountedPrice   Float?             
+  id                String             @id @default(uuid())
+  planName          String             @unique
+  price             Float
+  planType          PlanType           @default(FREE)
+  currency          String             @default("USD")
+  interval          Interval           @default(month)
+  intervalCount     Int                @default(1)
+  productId         String             @unique
+  priceId           String             @unique
+  active            Boolean            @default(true)
+  description       String
+  discountType      DiscountType?
+  discountValue     Float?
+  discountedPrice   Float?
   discountStartDate DateTime?
   discountEndDate   DateTime?
-  hasDiscount       Boolean           @default(false)
-
-
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
-  featuredItems PlanFeaturedItem[]
-  subscriptions Subscription[]
-
+  hasDiscount       Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  featuredItems     PlanFeaturedItem[]
+  subscriptions     Subscription[]
 
   @@map("plans")
 }
 
-
 model Subscription {
-  id              String               @id @default(uuid())
-  userId          String               
-  planId          String
-
-   stripeSubscriptionId String?             @unique
-  stripeCustomerId    String?
-  currentPeriodStart  DateTime
-  currentPeriodEnd    DateTime
-  status              SubscriptionStatus   @default(INCOMPLETE)
-  cancelAtPeriodEnd   Boolean              @default(false)
-  lastPaymentDate     DateTime?
-  nextPaymentDate     DateTime?
-  renewalAttempts     Int                  @default(0)
-  autoRenew             Boolean       @default(true) 
-  startDate       DateTime
-  endDate         DateTime?
-  amount          Float
-  stripePaymentId String?               @unique
-  paymentStatus   PaymentStatus        @default(PENDING)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  plan            Plan                 @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String             @id @default(uuid())
+  userId               String
+  planId               String
+  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String?
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  status               SubscriptionStatus @default(INCOMPLETE)
+  cancelAtPeriodEnd    Boolean            @default(false)
+  lastPaymentDate      DateTime?
+  nextPaymentDate      DateTime?
+  renewalAttempts      Int                @default(0)
+  autoRenew            Boolean            @default(true)
+  startDate            DateTime
+  endDate              DateTime?
+  amount               Float
+  stripePaymentId      String?            @unique
+  paymentStatus        PaymentStatus      @default(PENDING)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  plan                 Plan               @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELED
-  PAST_DUE
-  UNPAID
-  INCOMPLETE
-  INCOMPLETE_EXPIRED
-  TRIALING
 }
 
 model Blog {
@@ -149,7 +128,7 @@ model Profile {
   userId           String    @unique
   birthDate        DateTime?
   bio              String?
-  creativeFields   String[]  
+  creativeFields   String[]
   age              Int?
   nationality      String?
   country          String?
@@ -159,7 +138,6 @@ model Profile {
   membershipStatus String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
- 
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -173,14 +151,13 @@ model OtpModel {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String?
   message   String
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-
 
 model Review {
   id        String   @id @default(uuid())
@@ -188,37 +165,50 @@ model Review {
   comment   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 model Meeting {
-  id            String        @id @default(uuid())
-  userId        String
-  organizationId String?
-  
-  zoomMeetingId String?       @unique
-  joinUrl       String?
-  startUrl      String?
-  password      String?
- 
-  topic         String
-  startTime     DateTime
-  duration      Int          
-  timezone      String        @default("Asia/Dhaka")
-  status        MeetingStatus @default(SCHEDULED)
-  
+  id              String        @id @default(uuid())
+  userId          String
+  organizationId  String?
+  zoomMeetingId   String?       @unique
+  joinUrl         String?
+  startUrl        String?
+  password        String?
+  topic           String
+  startTime       DateTime
+  duration        Int
+  timezone        String        @default("Asia/Dhaka")
+  status          MeetingStatus @default(SCHEDULED)
+  calendarEventId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  calendarEventId String?     
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   @@map("meetings")
+}
+
+model Subscriber {
+  id             String           @id @default(uuid())
+  email          String           @unique
+  status         SubscriberStatus @default(ACTIVE)
+  accepted       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  blockedAt      DateTime?
+  unsubscribedAt DateTime?
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
 }
 
 enum MeetingStatus {
@@ -228,22 +218,11 @@ enum MeetingStatus {
   CANCELLED
 }
 
-model Subscriber {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  status      SubscriberStatus @default(ACTIVE)
-  accepted    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  blockedAt   DateTime?
-  unsubscribedAt DateTime?
-}
- enum SubscriberStatus {
+enum SubscriberStatus {
   ACTIVE
   BLOCKED
   UNSUBSCRIBED
 }
-
 
 enum PaymentStatus {
   PENDING
@@ -252,11 +231,13 @@ enum PaymentStatus {
   REFUNDED
   FAILED
 }
+
 enum Status {
   PROCESSING
   COMPLETED
   FAILED
 }
+
 enum UserRole {
   BUYER
   SELLER
@@ -266,16 +247,16 @@ enum UserRole {
   INSPECTOR
   LENDER
   COMMUNITY_PARTNER
-  USER 
+  USER
   ADMIN
   SUPER_ADMIN
 }
-
 
 enum DiscountType {
   PERCENTAGE
   FIXED_AMOUNT
 }
+
 enum FeaturedType {
   LIMIT
   STORAGE
@@ -290,13 +271,13 @@ enum PlanType {
   FREE
   SILVER
   GOLD
- 
 }
 
 enum Interval {
   month
   year
 }
+
 enum PlanCategory {
   ORGANIZATION
   ARTIST

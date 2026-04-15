@@ -57,7 +57,7 @@ export const sendEmail = async (
   `;
 
   await transporter.sendMail({
-    from: `"ArtHub" <${config.sendEmail.email_from}>`,
+    from: `"support@homewrk.net" <${config.sendEmail.email_from}>`,
     to,
     subject:resetPassLink ,
     text: "",
@@ -128,7 +128,7 @@ export const sendUserMessageEmail = async (
     <div style="background: linear-gradient(90deg, #2563eb, #3b82f6); padding: 22px; color: #fff; text-align: center;">
       <h2 style="margin: 0;">You Have a New Message</h2>
       <p style="margin: 6px 0 0; font-size: 14px; opacity: 0.9;">
-        Sent via ArtHub Platform
+        Sent via support@homewrk.net Platform
       </p>
     </div>
 
@@ -143,7 +143,7 @@ export const sendUserMessageEmail = async (
     </div>
 
     <div style="background-color: #f1f5f9; padding: 14px; text-align: center; color: #6b7280; font-size: 12px;">
-      &copy; ${new Date().getFullYear()} ArtHub. All rights reserved.
+      &copy; ${new Date().getFullYear()} support@homewrk.net. All rights reserved.
     </div>
   </div>
   `;
@@ -202,7 +202,7 @@ export const sendBulkEmail = async (
   `;
 
   await transporter.sendMail({
-    from: `"ArtHub" <${config.sendEmail.email_from}>`,
+    from: `"support@homewrk.net" <${config.sendEmail.email_from}>`,
     bcc: recipients, 
     subject: subject,
     text: isHtml ? undefined : message, 
@@ -411,7 +411,7 @@ export const sendNudgeEmail = async (
       </div>
 
       <p style="text-align:center;color:#999;font-size:12px;margin-top:20px">
-        © ${new Date().getFullYear()} ArtHub. All rights reserved.
+        © ${new Date().getFullYear()} support@homewrk.net. All rights reserved.
       </p>
     </div>`;
   }
@@ -453,13 +453,13 @@ export const sendNudgeEmail = async (
       </div>
 
       <p style="text-align:center;color:#999;font-size:12px;margin-top:20px">
-        © ${new Date().getFullYear()} ArtHub. All rights reserved.
+        © ${new Date().getFullYear()} support@homewrk.net. All rights reserved.
       </p>
     </div>`;
   }
 
   await transporter.sendMail({
-    from: `"ArtHub" <${config.sendEmail.email_from}>`,
+    from: `"support@homewrk.net" <${config.sendEmail.email_from}>`,
     to,
     subject,
     html,
