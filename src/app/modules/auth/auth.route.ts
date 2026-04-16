@@ -45,6 +45,22 @@ router.post("/verify-reset-password-otp", AuthController.verifyResetPasswordOTP)
 
 router.post("/resend-reset-password-otp", AuthController.resendResetPasswordOtp);
 
+router.post(
+  "/resend-reset-otp",
+  AuthController.resendResetPasswordOtp,
+);
+
+router.post(
+  "/create-staff",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MUNICIPALITY),
+  AuthController.createStaffAccount,
+);
+
+router.post(
+  "/setup-password",
+  AuthController.setupPassword,
+);
+
 router.post("/reset-password", AuthController.resetPassword);
 
 export const AuthRoutes = router;

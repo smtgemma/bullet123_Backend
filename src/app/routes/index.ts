@@ -7,6 +7,8 @@ import { blogRouter } from "../modules/blogs/blog.route";
 import { contactRoute } from "../modules/contact/contact.route";
 import { subscriberRoutes } from "../modules/Subscriber/subscrober.route";
 import { meetingRoutes } from "../modules/meeting/meeting.route";
+import { MunicipalityRoutes } from "../modules/municipality/municipality.routes";
+import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes";
 
 
 const router = Router();
@@ -44,6 +46,14 @@ const moduleRoutes = [
 {
     path: "/mettings",
     route: meetingRoutes,
+  },
+  {
+    path: "/municipalities",
+    route: MunicipalityRoutes,
+  },
+  {
+    path: "/property-infos",
+    route: PropertyInfoRoutes,
   },
 ];
 

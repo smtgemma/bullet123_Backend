@@ -31,6 +31,8 @@ const getEffectivePrice = (plan: any): number => {
 
   return plan.price;
 };
+
+
 const createSubscription = async (userId: string, planId: string) => {
 
   
@@ -44,32 +46,6 @@ const createSubscription = async (userId: string, planId: string) => {
       include: { featuredItems: { include: { featuredItem: true } } },
     });
     if (!plan) throw new AppError(status.NOT_FOUND, "Plan not found");
- 
-  const existingSubscriptions = await tx.subscription.findFirst({
-  where: {
-    userId,
-    plan: {
-      planType: {
-        not: "FREE"
-      }
-    },
-    OR: [
-      { status: { in: ["ACTIVE", "TRIALING"] } },
-      { paymentStatus: { in: ["COMPLETED"] } }
-    ]
-  },
-  include: {
-    plan: true
-  }
-});
-
-
-    if (existingSubscriptions) {
-      throw new AppError(
-        status.BAD_REQUEST,
-        `You already have an active subscription. Please cancel your current subscription before subscribing to a new plan.`
-      );
-    }
 
     const pendingSubscriptions = await tx.subscription.findMany({
       where: { 
@@ -135,23 +111,6 @@ const createSubscription = async (userId: string, planId: string) => {
         data: { stripeCustomerId: customer.id },
       });
     }
-
- 
-    const existingSubscription = await tx.subscription.findFirst({
-      where: { 
-        userId: user.id, 
-        plan:{
-          planType:{
-            not:PlanType.FREE
-          }
-        },
-        status: { in: ["ACTIVE", "TRIALING"] }
-      },
-    });
-    if (existingSubscription) {
-      throw new AppError(status.BAD_REQUEST, "You already have an active subscription");
-    }
-
     // const stripeSubscription: any = await stripe.subscriptions.create({
     //   customer: stripeCustomerId,
     //   items: [{ price: plan.priceId }],
@@ -241,7 +200,7 @@ const stripeSubscription: any = await stripe.subscriptions.create({
 const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent) => {
   const { userId, planId } = paymentIntent.metadata;
   if (!userId || !planId) {
-    console.log("⚠️ Missing userId or planId in payment intent metadata");
+    console.log(" Missing userId or planId in payment intent metadata");
     return;
   }
 
@@ -255,7 +214,7 @@ const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent)
       });
 
       if (!user || !plan) {
-        console.log("⚠️ User or plan not found");
+        console.log(" User or plan not found");
         return;
       }
 
@@ -287,7 +246,7 @@ const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent)
         },
       });
 
-      console.log(`✅ Payment succeeded for user ${userId}`);
+      console.log(` Payment succeeded for user ${userId}`);
     });
   } catch (error) {
     console.error(" Error handling payment intent succeeded:", error);
@@ -303,7 +262,7 @@ const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
     : (invoice as any).subscription?.id;
 
   if (!subscriptionId) {
-    console.log("⚠️ No subscription ID in invoice");
+    console.log(" No subscription ID in invoice");
     return;
   }
 
@@ -314,7 +273,7 @@ const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
     });
 
     if (!subscription) {
-      console.log(`⚠️ Subscription not found for ${subscriptionId}`);
+      console.log(` Subscription not found for ${subscriptionId}`);
       return;
     }
 
@@ -731,12 +690,12 @@ const HandleStripeWebhook = async (event: Stripe.Event) => {
         break;
       
       default:
-        console.log(`⚠️ Unhandled event: ${event.type}`);
+        console.log(`Unhandled event: ${event.type}`);
     }
     
     return { received: true };
   } catch (error: any) {
-    console.error("❌ Webhook error:", error);
+    console.error(" Webhook error:", error);
     throw new AppError(status.INTERNAL_SERVER_ERROR, `Webhook handling failed: ${error.message}`);
   }
 };

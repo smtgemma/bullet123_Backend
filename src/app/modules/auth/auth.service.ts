@@ -262,6 +262,16 @@ const verifyOTP = async (email: string, otpCode: string) => {
         message: `Welcome ${user.fullName}! Your account is now verified.`,
       },
     });
+
+    // Auto-create Municipality profile if role is MUNICIPALITY
+    if (user.role === UserRole.MUNICIPALITY) {
+      await tx.municipality.create({
+        data: {
+          userId: user.id,
+          email: user.email,
+        },
+      });
+    }
   });
 
   const jwtPayload = {
@@ -617,6 +627,93 @@ export const refreshToken = async (token: string) => {
   return { accessToken };
 };
 
+// ── Create Staff Account (Invited by Admin/Municipality) ──────────────────
+const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole }) => {
+  const normalizedEmail = payload.email.toLowerCase().trim();
+
+  const isUserExist = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (isUserExist) {
+    throw new ApiError(status.CONFLICT, "User with this email already exists!");
+  }
+
+  // Create user with a dummy password and isVerified: false
+  // Random password logic not needed as user will set it via setupPassword
+  const tempPassword = await hashPassword(Math.random().toString(36).slice(-10));
+
+  const result = await prisma.user.create({
+    data: {
+      fullName: payload.fullName,
+      email: normalizedEmail,
+      password: tempPassword,
+      role: payload.role,
+      isVerified: false,
+    },
+  });
+
+  // Generate Setup Token (expires in 24h)
+  const setupToken = jwtHelpers.createToken(
+    { email: normalizedEmail },
+    config.jwt.access.secret as string,
+    "24h"
+  );
+
+  // Store token in Redis to verify during setup
+  await redisClient.setEx(`setup-token:${normalizedEmail}`, 24 * 3600, setupToken);
+
+  // Send Invitation Email
+  const setupUrl = `${config.url.frontend}/setup-password?token=${setupToken}&email=${normalizedEmail}`;
+  
+  const emailContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
+      <h2 style="color: #4CAF50; text-align: center;">Welcome to Bullet Backend!</h2>
+      <p>Hello <strong>${payload.fullName}</strong>,</p>
+      <p>You have been invited to join our platform as a <strong>${payload.role}</strong>.</p>
+      <p>To get started and activate your account, please set your password by clicking the button below:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${setupUrl}" style="background-color: #4CAF50; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Set Up Your Password</a>
+      </div>
+      <p>This link will expire in 24 hours.</p>
+      <p>If you have any questions, feel free to contact our support team.</p>
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+      <p style="font-size: 12px; color: #888; text-align: center;">Bullet Backend Team</p>
+    </div>
+  `;
+
+  await sendEmail(normalizedEmail, "🔐 Invitation to Join - Set Up Your Password", emailContent);
+
+  return { message: "Invitation sent successfully!" };
+};
+
+// ── Setup Password (Activate Account) ─────────────────────────────────────
+const setupPassword = async (payload: { token: string; email: string; password: string }) => {
+  const normalizedEmail = payload.email.toLowerCase().trim();
+
+  // Verify token from Redis
+  const cachedToken = await redisClient.get(`setup-token:${normalizedEmail}`);
+  if (!cachedToken || cachedToken !== payload.token) {
+    throw new ApiError(status.BAD_REQUEST, "Invalid or expired setup token!");
+  }
+
+  const hashedPassword = await hashPassword(payload.password);
+
+  await prisma.user.update({
+    where: { email: normalizedEmail },
+    data: {
+      password: hashedPassword,
+      isVerified: true,
+      passwordChangedAt: new Date(),
+    },
+  });
+
+  // Delete token from Redis after use
+  await redisClient.del(`setup-token:${normalizedEmail}`);
+
+  return { message: "Password set successfully! Your account is now active." };
+};
+
 export const AuthService = {
   getMe,
   loginUser,
@@ -629,4 +726,6 @@ export const AuthService = {
   verifyOTP,
   resendEmailVerificationOtp,
   resendResetPasswordOtp,
+  createStaffAccount,
+  setupPassword,
 };

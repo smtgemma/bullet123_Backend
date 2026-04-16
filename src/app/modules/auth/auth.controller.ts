@@ -5,7 +5,7 @@ import { AuthService } from "./auth.service";
 
 // ── Register ───────────────────────────────────────────────────────────────
 const register = catchAsync(async (req, res) => {
-  const { fullName, email, password, profilePic,role } = req.body;
+  const { fullName, email, password, profilePic, role } = req.body;
 
   const result = await AuthService.register({
     fullName,
@@ -178,6 +178,24 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
+const createStaffAccount = catchAsync(async (req, res) => {
+  const result = await AuthService.createStaffAccount(req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+  });
+});
+
+const setupPassword = catchAsync(async (req, res) => {
+  const result = await AuthService.setupPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: result.message,
+  });
+});
+
 export const AuthController = {
   register,
   verifyOTP,
@@ -190,4 +208,6 @@ export const AuthController = {
   changePassword,
   verifyResetPasswordOTP,
   resendResetPasswordOtp,
+  createStaffAccount,
+  setupPassword,
 };

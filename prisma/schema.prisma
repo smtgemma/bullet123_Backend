@@ -25,8 +25,11 @@ model User {
   Notifications     Notification[]
   Profile           Profile?
   review            Review[]
-  meetings          Meeting[]
-  Subscription      Subscription[]
+  meetings           Meeting[]
+  Subscription       Subscription[]
+  Municipality       Municipality?
+  assignedProperties PropertyInfo[]
+  teams              Team[]
 
   @@map("users")
 }
@@ -201,6 +204,61 @@ model Subscriber {
   unsubscribedAt DateTime?
 }
 
+
+
+
+
+model Municipality {
+  id         String         @id @default(uuid())
+  userId     String         @unique
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email      String
+
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  properties PropertyInfo[]
+  teams      Team[]
+
+  @@map("municipalities")
+}
+
+model PropertyInfo {
+  id               String       @id @default(cuid())
+  municipalityId   String
+  municipality     Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  propertyAddress  String
+  parcelId         Int
+  zone             String
+  propertyType     String
+  vacancyStatus    String
+  description      String?
+  askingPrice      Float
+  disposition      String
+  images           String[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  assignedStaff    User[]
+  teams            Team[]
+
+  @@index([municipalityId])
+  @@map("property_infos")
+}
+
+model Team {
+  id             String       @id @default(cuid())
+  name           String
+  municipalityId String
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  members        User[]
+  properties     PropertyInfo[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("teams")
+}
+
+
 enum SubscriptionStatus {
   ACTIVE
   CANCELED
@@ -282,3 +340,4 @@ enum PlanCategory {
   ORGANIZATION
   ARTIST
 }
+

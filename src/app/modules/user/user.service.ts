@@ -14,6 +14,7 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
   const include = {
     Profile: true,
     artwork: true,
+    Municipality: true,
     Subscription: {
       include: {
         plan: true,
@@ -33,7 +34,7 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
     role: UserRole.USER,
     isDeleted: false,
     artwork: {
-      some: {} 
+      some: {}
     }
   });
 
@@ -59,7 +60,7 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
     return rest;
   });
 
-  
+
   data.sort((a: any, b: any) => (b.artwork?.length || 0) - (a.artwork?.length || 0));
 
   return {
@@ -73,15 +74,17 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
 const getAllAdminFromDB = async (query: Record<string, unknown>) => {
   const include = {
     Profile: true,
+    Municipality: true,
     Subscription: {
       where: {
         status: "ACTIVE",
       },
       include: {
         plan: true,
+
       },
     },
-  
+
   };
 
   const queryBuilder = new QueryBuilder(prisma.user, query)
@@ -136,7 +139,7 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
     where: { id: userId },
     data: {
       fullName: payload.fullName,
-      profilePic: payload.profilePic 
+      profilePic: payload.profilePic
     },
     select: {
       id: true,
@@ -168,7 +171,7 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
   if (payload?.fullName) userUpdateData.fullName = payload.fullName;
   if (payload?.profilePic) userUpdateData.profilePic = payload.profilePic;
 
-  
+
   const profileData: any = {};
   if (payload?.birthDate) profileData.birthDate = new Date(payload.birthDate);
   if (payload?.bio) profileData.bio = payload.bio;
@@ -187,8 +190,8 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
       ...userUpdateData,
       Profile: {
         upsert: {
-          create: profileData, 
-          update: profileData, 
+          create: profileData,
+          update: profileData,
         },
       },
     },
@@ -212,10 +215,13 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
 const getSingleUserByIdFromDB = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include:{
-      Profile:true,
-      Subscription:{include:{plan:true    
-    } 
+    include: {
+      Profile: true,
+      Municipality: true,
+      Subscription: {
+        include: {
+          plan: true
+        }
       }
     }
   })
@@ -242,7 +248,7 @@ const deleteUserFromDB = async (userId: string) => {
     where: { id: userId },
     data: {
       isDeleted: true,
-      isVerified:false
+      isVerified: false
     },
   });
 
@@ -270,7 +276,7 @@ const deleteMeFromDB = async (userId: string, password: string) => {
     where: { id: userId },
     data: {
       isDeleted: true,
-      isVerified:false
+      isVerified: false
     },
   });
 
@@ -279,7 +285,7 @@ const deleteMeFromDB = async (userId: string, password: string) => {
 const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
-  });   
+  });
   if (!isUserExist) {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
@@ -288,9 +294,9 @@ const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
     data: { role },
     select: {
       id: true,
-  fullName: true,
+      fullName: true,
       email: true,
-      profilePic: true,   
+      profilePic: true,
       role: true,
       isVerified: true,
       createdAt: true,
@@ -299,22 +305,22 @@ const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
   });
 
 }
-const inviteUserToAdminToDB = async (payload:{email:string,fullName:string,description:string}) => {
+const inviteUserToAdminToDB = async (payload: { email: string, fullName: string, description: string }) => {
   const isUserExistByEmail = await prisma.user.findUnique({
     where: { email: payload.email },
   });
   if (!isUserExistByEmail) {
-    throw new ApiError( 
+    throw new ApiError(
 
       status.BAD_REQUEST,
       `this user das not exists: ${payload.email} in database!`
     );
-  } 
-  const sendEmail= await sendContactEmail(payload?.email,payload);
+  }
+  const sendEmail = await sendContactEmail(payload?.email, payload);
 
-  const chengeRole=await prisma.user.update({
-    where:{email:payload.email},
-    data:{role:UserRole.ADMIN}
+  const chengeRole = await prisma.user.update({
+    where: { email: payload.email },
+    data: { role: UserRole.ADMIN }
   })
   return chengeRole
 }
