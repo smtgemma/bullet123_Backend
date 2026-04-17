@@ -16,6 +16,26 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
 
   const { assignedStaffIds, teamIds, teamName, ...propertyData } = payload;
 
+  // Validate Staff IDs
+  if (assignedStaffIds && assignedStaffIds.length > 0) {
+    const users = await prisma.user.findMany({
+      where: { id: { in: assignedStaffIds } }
+    });
+    if (users.length !== assignedStaffIds.length) {
+      throw new ApiError(status.BAD_REQUEST, "One or more Staff IDs are invalid!");
+    }
+  }
+
+  // Validate Team IDs
+  if (teamIds && teamIds.length > 0) {
+    const teams = await prisma.team.findMany({
+      where: { id: { in: teamIds } }
+    });
+    if (teams.length !== teamIds.length) {
+      throw new ApiError(status.BAD_REQUEST, "One or more Team IDs are invalid!");
+    }
+  }
+
   const result = await prisma.propertyInfo.create({
     data: {
       ...propertyData,
@@ -121,6 +141,21 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
               role: true,
             }
           }
+        }
+      },
+      tasks: {
+        include: {
+          assignee: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              profilePic: true
+            }
+          }
+        },
+        orderBy: {
+          dueDate: "asc"
         }
       }
     },

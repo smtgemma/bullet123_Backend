@@ -27,9 +27,12 @@ model User {
   review            Review[]
   meetings           Meeting[]
   Subscription       Subscription[]
-  Municipality       Municipality?
+  Municipality       Municipality?  @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
   teams              Team[]
+  tasks              Task[]         @relation(name: "TaskAssignee")
+  municipalityId     String?
+  staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
   @@map("users")
 }
@@ -211,7 +214,7 @@ model Subscriber {
 model Municipality {
   id         String         @id @default(uuid())
   userId     String         @unique
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User           @relation(name: "MunicipalityUser", fields: [userId], references: [id], onDelete: Cascade)
   email      String
 
   createdAt  DateTime       @default(now())
@@ -219,6 +222,7 @@ model Municipality {
 
   properties PropertyInfo[]
   teams      Team[]
+  staffs     User[]         @relation(name: "StaffMunicipality")
 
   @@map("municipalities")
 }
@@ -240,6 +244,7 @@ model PropertyInfo {
   updatedAt        DateTime     @updatedAt
   assignedStaff    User[]
   teams            Team[]
+  tasks            Task[]
 
   @@index([municipalityId])
   @@map("property_infos")
@@ -256,6 +261,32 @@ model Team {
   updatedAt      DateTime     @updatedAt
 
   @@map("teams")
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  file        String?
+  status      TaskStatus   @default(TODO)
+  
+  propertyId  String
+  property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  assigneeId  String
+  assignee    User         @relation(name: "TaskAssignee", fields: [assigneeId], references: [id])
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
 }
 
 

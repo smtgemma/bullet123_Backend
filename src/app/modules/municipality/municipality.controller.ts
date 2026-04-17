@@ -60,12 +60,35 @@ const updateMunicipality = catchAsync(async (req, res) => {
 // ── Delete Municipality (Admin only) ──────────────────────────────────────
 const deleteMunicipality = catchAsync(async (req, res) => {
   const { id } = req.params;
-
-  await MunicipalityService.deleteMunicipalityFromDB(id as string);
+  const result = await MunicipalityService.deleteMunicipalityFromDB(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
     message: "Municipality deleted successfully!",
+    data: result,
+  });
+});
+
+const getMyStaffs = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await MunicipalityService.getMyStaffsFromDB(userId, req.query);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Staffs retrieved successfully!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const getSingleStaff = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await MunicipalityService.getSingleStaffFromDB(id as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Staff member retrieved successfully!",
+    data: result,
   });
 });
 
@@ -75,4 +98,6 @@ export const MunicipalityController = {
   getMyMunicipalityProfile,
   updateMunicipality,
   deleteMunicipality,
+  getMyStaffs,
+  getSingleStaff,
 };

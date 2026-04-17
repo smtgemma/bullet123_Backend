@@ -2,6 +2,8 @@ import status from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { AuthService } from "./auth.service";
+import AppError from "../../errors/AppError";
+import prisma from "../../utils/prisma";
 
 // ── Register ───────────────────────────────────────────────────────────────
 const register = catchAsync(async (req, res) => {
@@ -178,8 +180,22 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
+// ── Create Staff Account ───────────────────────────────────────────────────
 const createStaffAccount = catchAsync(async (req, res) => {
-  const result = await AuthService.createStaffAccount(req.body);
+  const userId = req.user?.id as string;
+  
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId }
+  });
+
+  if (!municipality) {
+    throw new AppError(status.NOT_FOUND, "Municipality profile not found for this user!");
+  }
+
+  const result = await AuthService.createStaffAccount({
+    ...req.body,
+    municipalityId: municipality.id
+  });
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -187,6 +203,7 @@ const createStaffAccount = catchAsync(async (req, res) => {
   });
 });
 
+// ── Setup Password ─────────────────────────────────────────────────────────
 const setupPassword = catchAsync(async (req, res) => {
   const result = await AuthService.setupPassword(req.body);
 

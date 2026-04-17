@@ -71,7 +71,7 @@ export const updateSubscriber = catchAsync(async (req, res) => {
 export const deleteSubscriber = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await SubscriberService.deleteSubscriber(id);
+  const result = await SubscriberService.deleteSubscriber(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -84,7 +84,7 @@ export const deleteSubscriber = catchAsync(async (req, res) => {
 export const blockSubscriber = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await SubscriberService.blockSubscriber(id);
+  const result = await SubscriberService.blockSubscriber(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,

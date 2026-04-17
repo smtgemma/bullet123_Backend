@@ -16,7 +16,7 @@ const getAllnotification = catchAsync(async (req, res) => {
 
 const getSingleNotification = catchAsync(async (req, res) => {
   const { id } = req.params;    
-    const result = await notifactionService.getSingleNotification(id);  
+    const result = await notifactionService.getSingleNotification(id as string);  
     sendResponse(res, {
       statusCode: status.OK,
       message: "Notification retrieved successfully!",  

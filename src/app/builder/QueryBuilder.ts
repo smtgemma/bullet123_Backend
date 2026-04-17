@@ -111,10 +111,10 @@ class QueryBuilder {
   }
 
   
-  include(inculpableFields: Record<string, boolean | object>) {
+  include(includeFields: Record<string, any>) {
     this.prismaQuery.include = {
       ...this.prismaQuery.include,
-      ...inculpableFields,
+      ...includeFields,
     };
     return this;
   }

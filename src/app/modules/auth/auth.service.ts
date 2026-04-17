@@ -628,7 +628,7 @@ export const refreshToken = async (token: string) => {
 };
 
 // ── Create Staff Account (Invited by Admin/Municipality) ──────────────────
-const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole }) => {
+const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole; municipalityId: string }) => {
   const normalizedEmail = payload.email.toLowerCase().trim();
 
   const isUserExist = await prisma.user.findUnique({
@@ -639,8 +639,6 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
     throw new ApiError(status.CONFLICT, "User with this email already exists!");
   }
 
-  // Create user with a dummy password and isVerified: false
-  // Random password logic not needed as user will set it via setupPassword
   const tempPassword = await hashPassword(Math.random().toString(36).slice(-10));
 
   const result = await prisma.user.create({
@@ -650,12 +648,13 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
       password: tempPassword,
       role: payload.role,
       isVerified: false,
+      municipalityId: payload.municipalityId,
     },
   });
 
   // Generate Setup Token (expires in 24h)
   const setupToken = jwtHelpers.createToken(
-    { email: normalizedEmail },
+    { email: normalizedEmail } as any,
     config.jwt.access.secret as string,
     "24h"
   );

@@ -12,7 +12,7 @@ const router = Router();
 router.post(
   "/create",
   auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  imageUpload.array("files", 10), // Allow up to 10 images as per design
+  imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
       req.body = JSON.parse(req.body.data);

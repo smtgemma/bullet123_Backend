@@ -24,6 +24,18 @@ router.get(
   MunicipalityController.getMyMunicipalityProfile
 );
 
+router.get(
+  "/my-staffs",
+  auth(UserRole.MUNICIPALITY),
+  MunicipalityController.getMyStaffs
+);
+
+router.get(
+  "/staffs/:id",
+  auth(UserRole.MUNICIPALITY),
+  MunicipalityController.getSingleStaff
+);
+
 // Update my municipality profile (MUNICIPALITY only)
 router.patch(
   "/me/update",

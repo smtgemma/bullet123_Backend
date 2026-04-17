@@ -33,7 +33,7 @@ const getAllmeetings = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getSinglemeeting = catchAsync(async (req: Request, res: Response) => {
-  const result = await meetingService.getSinglemeeting(req.params.id);
+  const result = await meetingService.getSinglemeeting(req.params.id as string);
   sendResponse(res, {
     statusCode: httpStatus.OK,
   
@@ -43,7 +43,7 @@ const getSinglemeeting = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updatemeeting = catchAsync(async (req: Request, res: Response) => {
-  const result = await meetingService.updatemeeting(req.params.id, req.body);
+  const result = await meetingService.updatemeeting(req.params.id as string, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
   
@@ -53,7 +53,7 @@ const updatemeeting = catchAsync(async (req: Request, res: Response) => {
 });
 
 const deletemeeting = catchAsync(async (req: Request, res: Response) => {
-  await meetingService.deletemeeting(req.params.id);
+  await meetingService.deletemeeting(req.params.id as string);
   sendResponse(res, {
     statusCode: httpStatus.OK,
   

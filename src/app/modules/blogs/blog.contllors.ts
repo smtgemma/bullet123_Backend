@@ -38,7 +38,7 @@ export const getAllBlogs = catchAsync(async (_req: Request, res: Response) => {
 // Get Single Blog (and increase views)
 export const getSingleBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await blogService.getSingleBlog(id);
+  const result = await blogService.getSingleBlog(id as string);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Blog retrieved successfully!",
@@ -49,7 +49,7 @@ export const getSingleBlog = catchAsync(async (req: Request, res: Response) => {
 // Update Blog
 export const updateBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await blogService.updateBlog(id, req.body);
+  const result = await blogService.updateBlog(id as string, req.body);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Blog updated successfully!",
@@ -60,7 +60,7 @@ export const updateBlog = catchAsync(async (req: Request, res: Response) => {
 // Delete Blog
 export const deleteBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await blogService.deleteBlog(id);
+  const result = await blogService.deleteBlog(id as string);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Blog deleted successfully!",

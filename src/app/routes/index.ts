@@ -9,6 +9,8 @@ import { subscriberRoutes } from "../modules/Subscriber/subscrober.route";
 import { meetingRoutes } from "../modules/meeting/meeting.route";
 import { MunicipalityRoutes } from "../modules/municipality/municipality.routes";
 import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes";
+import { TeamRoutes } from "../modules/team/team.routes";
+import { TaskRoutes } from "../modules/task/task.routes";
 
 
 const router = Router();
@@ -54,6 +56,14 @@ const moduleRoutes = [
   {
     path: "/property-infos",
     route: PropertyInfoRoutes,
+  },
+  {
+    path: "/teams",
+    route: TeamRoutes,
+  },
+  {
+    path: "/tasks",
+    route: TaskRoutes,
   },
 ];
 

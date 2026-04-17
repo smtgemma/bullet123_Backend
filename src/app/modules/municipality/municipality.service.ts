@@ -137,10 +137,75 @@ const deleteMunicipalityFromDB = async (id: string) => {
   return null;
 };
 
+// ── Get my Municipality Staffs ─────────────────────────────────────────────
+const getMyStaffsFromDB = async (userId: string, query: Record<string, unknown>) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const queryBuilder = new QueryBuilder(prisma.user, query)
+    .search(["fullName", "email"])
+    .rawFilter({ municipalityId: municipality.id, isDeleted: false })
+    .sort()
+    .paginate()
+    .fields()
+    .include({
+      teams: true,
+      assignedProperties: {
+        take: 3 // Show few properties in list view
+      }
+    });
+
+  const result = await queryBuilder.execute();
+  const meta = await queryBuilder.countTotal();
+
+  return { meta, data: result };
+};
+
+// ── Get Single Staff Details ───────────────────────────────────────────────
+const getSingleStaffFromDB = async (staffId: string) => {
+  const staff = await prisma.user.findUnique({
+    where: { id: staffId },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      profilePic: true,
+      isVerified: true,
+      createdAt: true,
+      teams: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      assignedProperties: {
+        include: {
+          municipality: true
+        }
+      }
+    }
+  });
+
+  if (!staff) {
+    throw new ApiError(status.NOT_FOUND, "Staff member not found!");
+  }
+
+  return staff;
+};
+
 export const MunicipalityService = {
   getAllMunicipalitiesFromDB,
   getSingleMunicipalityFromDB,
   getMyMunicipalityProfileFromDB,
   updateMunicipalityIntoDB,
   deleteMunicipalityFromDB,
+  getMyStaffsFromDB,
+  getSingleStaffFromDB,
 };
+
