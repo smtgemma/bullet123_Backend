@@ -11,6 +11,10 @@ import { MunicipalityRoutes } from "../modules/municipality/municipality.routes"
 import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes";
 import { TeamRoutes } from "../modules/team/team.routes";
 import { TaskRoutes } from "../modules/task/task.routes";
+import { QARoutes } from "../modules/communityQA/qa.routes";
+import { SuccessStoryRoutes } from "../modules/successStory/successStory.routes";
+import { SettingsRoutes } from "../modules/settings/settings.routes";
+import { LegalRoutes } from "../modules/legal/legal.routes";
 
 
 const router = Router();
@@ -64,6 +68,23 @@ const moduleRoutes = [
   {
     path: "/tasks",
     route: TaskRoutes,
+  },
+  // ── New Modules ──────────────────────────────────────────
+  {
+    path: "/community-qa",
+    route: QARoutes,
+  },
+  {
+    path: "/success-stories",
+    route: SuccessStoryRoutes,
+  },
+  {
+    path: "/settings",
+    route: SettingsRoutes,
+  },
+  {
+    path: "/legal",
+    route: LegalRoutes,
   },
 ];
 

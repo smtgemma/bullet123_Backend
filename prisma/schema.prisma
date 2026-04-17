@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
+
 model User {
   id                String         @id @default(uuid())
   fullName          String
@@ -25,14 +26,21 @@ model User {
   Notifications     Notification[]
   Profile           Profile?
   review            Review[]
-  meetings           Meeting[]
-  Subscription       Subscription[]
-  Municipality       Municipality?  @relation(name: "MunicipalityUser")
+  meetings          Meeting[]
+  Subscription      Subscription[]
+  Municipality      Municipality?  @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
-  teams              Team[]
-  tasks              Task[]         @relation(name: "TaskAssignee")
-  municipalityId     String?
-  staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  teams             Team[]
+  tasks             Task[]         @relation(name: "TaskAssignee")
+  municipalityId    String?
+  staffMunicipality Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  // Community Q&A
+  questions         Question[]     @relation(name: "QuestionUser")
+  answers           Answer[]       @relation(name: "AnswerUser")
+  questionVotes     QuestionVote[] @relation(name: "QuestionVoteUser")
+  answerVotes       AnswerVote[]   @relation(name: "AnswerVoteUser")
+  // Settings
+  settings          UserSettings?
 
   @@map("users")
 }
@@ -372,3 +380,126 @@ enum PlanCategory {
   ARTIST
 }
 
+enum StoryCategory {
+  COMMUNITY_IMPACT
+  AFFORDABLE_HOUSING
+  COMMERCIAL
+  RESIDENTIAL
+  HISTORIC_PRESERVATION
+  NEIGHBORHOOD_REVITALIZATION
+}
+
+// ── Community Q&A ──────────────────────────────────────────────────────────
+
+model Question {
+  id            String         @id @default(uuid())
+  title         String
+  details       String?
+  tags          String[]
+  userId        String
+  user          User           @relation(name: "QuestionUser", fields: [userId], references: [id], onDelete: Cascade)
+  votes         Int            @default(0)
+  views         Int            @default(0)
+  isAnswered    Boolean        @default(false)
+  answers       Answer[]
+  questionVotes QuestionVote[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("questions")
+}
+
+model Answer {
+  id          String       @id @default(uuid())
+  content     String
+  questionId  String
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(name: "AnswerUser", fields: [userId], references: [id], onDelete: Cascade)
+  votes       Int          @default(0)
+  isAccepted  Boolean      @default(false)
+  answerVotes AnswerVote[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("answers")
+}
+
+model QuestionVote {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(name: "QuestionVoteUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([questionId, userId])
+  @@map("question_votes")
+}
+
+model AnswerVote {
+  id        String   @id @default(uuid())
+  answerId  String
+  answer    Answer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(name: "AnswerVoteUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([answerId, userId])
+  @@map("answer_votes")
+}
+
+// ── Success Stories ────────────────────────────────────────────────────────
+
+model SuccessStory {
+  id              String        @id @default(uuid())
+  title           String
+  category        StoryCategory
+  location        String
+  completedDate   DateTime
+  beforeImage     String
+  afterImage      String
+  investment      Float
+  duration        Int
+  roi             Float
+  storyText       String
+  quote           String?
+  quoteAuthor     String?
+  quoteAuthorRole String?
+  isFeatured      Boolean       @default(false)
+  views           Int           @default(0)
+  teamMembers     StoryTeamMember[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("success_stories")
+}
+
+model StoryTeamMember {
+  id         String       @id @default(uuid())
+  storyId    String
+  story      SuccessStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  name       String
+  role       String
+  profilePic String?
+  createdAt  DateTime     @default(now())
+
+  @@map("story_team_members")
+}
+
+// ── User Settings ──────────────────────────────────────────────────────────
+
+model UserSettings {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailNotifications   Boolean  @default(true)
+  messageNotifications Boolean  @default(true)
+  projectUpdates       Boolean  @default(true)
+  profileVisibility    Boolean  @default(true)
+  showContactInfo      Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("user_settings")
+}
