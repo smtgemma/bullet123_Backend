@@ -14,7 +14,7 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
     throw new ApiError(status.NOT_FOUND, "Municipality profile not found for this user!");
   }
 
-  const { assignedStaffIds, teamIds, teamName, ...propertyData } = payload;
+  const { assignedStaffIds, ...propertyData } = payload;
 
   // Validate Staff IDs
   if (assignedStaffIds && assignedStaffIds.length > 0) {
@@ -26,33 +26,12 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
     }
   }
 
-  // Validate Team IDs
-  if (teamIds && teamIds.length > 0) {
-    const teams = await prisma.team.findMany({
-      where: { id: { in: teamIds } }
-    });
-    if (teams.length !== teamIds.length) {
-      throw new ApiError(status.BAD_REQUEST, "One or more Team IDs are invalid!");
-    }
-  }
+
 
   const result = await prisma.propertyInfo.create({
     data: {
       ...propertyData,
       municipalityId: municipality.id,
-      // Handle automatic team creation if teamName and staffIds are provided
-      teams: {
-        connect: teamIds ? teamIds.map(id => ({ id })) : [],
-        create: (teamName && assignedStaffIds) ? [
-          {
-            name: teamName,
-            municipalityId: municipality.id,
-            members: {
-              connect: assignedStaffIds.map(id => ({ id }))
-            }
-          }
-        ] : []
-      },
       // Keep individual assignment for direct access tracking
       assignedStaff: assignedStaffIds ? {
         connect: assignedStaffIds.map(id => ({ id }))
@@ -67,20 +46,6 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
           profilePic: true,
           role: true,
           isVerified: true
-        }
-      },
-      teams: {
-        include: {
-          members: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
-              profilePic: true,
-              role: true,
-              isVerified: true
-            }
-          }
         }
       }
     }
@@ -107,8 +72,8 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
           role: true,
         }
       },
-      teams: true
     });
+
 
   const result = await queryBuilder.execute();
   const meta = await queryBuilder.countTotal();
@@ -128,19 +93,6 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
           email: true,
           profilePic: true,
           role: true,
-        }
-      },
-      teams: {
-        include: {
-          members: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
-              profilePic: true,
-              role: true,
-            }
-          }
         }
       },
       tasks: {
@@ -175,7 +127,7 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
     throw new ApiError(status.NOT_FOUND, "Property info not found!");
   }
 
-  const { assignedStaffIds, teamIds, ...updateData } = payload;
+  const { assignedStaffIds, ...updateData } = payload;
 
   const result = await prisma.propertyInfo.update({
     where: { id },
@@ -184,13 +136,17 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
       assignedStaff: assignedStaffIds ? {
         set: assignedStaffIds.map(id => ({ id }))
       } : undefined,
-      teams: teamIds ? {
-        set: teamIds.map(id => ({ id }))
-      } : undefined
     },
     include: {
-      assignedStaff: true,
-      teams: true
+      assignedStaff: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+        }
+      },
     }
   });
 
@@ -225,6 +181,64 @@ const getMyPropertiesFromDB = async (userId: string) => {
   return result;
 };
 
+const assignStaffToPropertyInDB = async (propertyId: string, staffIds: string[]) => {
+  const isExist = await prisma.propertyInfo.findUnique({ where: { id: propertyId } });
+  if (!isExist) {
+    throw new ApiError(status.NOT_FOUND, "Property info not found!");
+  }
+
+  const result = await prisma.propertyInfo.update({
+    where: { id: propertyId },
+    data: {
+      assignedStaff: {
+        connect: staffIds.map((id) => ({ id })),
+      },
+    },
+    include: {
+      assignedStaff: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+        }
+      },
+    },
+  });
+
+  return result;
+};
+
+const removeStaffFromPropertyInDB = async (propertyId: string, staffId: string) => {
+  const isExist = await prisma.propertyInfo.findUnique({ where: { id: propertyId } });
+  if (!isExist) {
+    throw new ApiError(status.NOT_FOUND, "Property info not found!");
+  }
+
+  const result = await prisma.propertyInfo.update({
+    where: { id: propertyId },
+    data: {
+      assignedStaff: {
+        disconnect: { id: staffId },
+      },
+    },
+    include: {
+      assignedStaff: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+        }
+      },
+    },
+  });
+
+  return result;
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -232,4 +246,6 @@ export const PropertyInfoService = {
   updatePropertyInfoIntoDB,
   deletePropertyInfoFromDB,
   getMyPropertiesFromDB,
+  assignStaffToPropertyInDB,
+  removeStaffFromPropertyInDB,
 };

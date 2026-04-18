@@ -10,6 +10,4 @@ export interface IPropertyInfo {
   disposition: string;
   images: string[];
   assignedStaffIds?: string[];
-  teamIds?: string[];
-  teamName?: string;
 }

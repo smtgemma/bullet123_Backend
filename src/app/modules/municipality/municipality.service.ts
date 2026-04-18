@@ -154,7 +154,6 @@ const getMyStaffsFromDB = async (userId: string, query: Record<string, unknown>)
     .paginate()
     .fields()
     .include({
-      teams: true,
       assignedProperties: {
         take: 3 // Show few properties in list view
       }
@@ -178,12 +177,6 @@ const getSingleStaffFromDB = async (staffId: string) => {
       profilePic: true,
       isVerified: true,
       createdAt: true,
-      teams: {
-        select: {
-          id: true,
-          name: true
-        }
-      },
       assignedProperties: {
         include: {
           municipality: true

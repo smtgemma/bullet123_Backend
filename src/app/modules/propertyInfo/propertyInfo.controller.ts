@@ -78,6 +78,30 @@ const getMyProperties = catchAsync(async (req, res) => {
   });
 });
 
+const assignStaff = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { staffIds } = req.body;
+  const result = await PropertyInfoService.assignStaffToPropertyInDB(id as string, staffIds);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Staff assigned successfully!",
+    data: result,
+  });
+});
+
+const removeStaff = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { staffId } = req.body;
+  const result = await PropertyInfoService.removeStaffFromPropertyInDB(id as string, staffId as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Staff removed successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -85,4 +109,6 @@ export const PropertyInfoController = {
   updatePropertyInfo,
   deletePropertyInfo,
   getMyProperties,
+  assignStaff,
+  removeStaff,
 };

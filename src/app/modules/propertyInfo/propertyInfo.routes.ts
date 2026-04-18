@@ -73,4 +73,17 @@ router.delete(
   PropertyInfoController.deletePropertyInfo
 );
 
+router.patch(
+  "/:id/assign-staff",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  validateRequest(PropertyInfoValidation.assignStaffValidationSchema),
+  PropertyInfoController.assignStaff
+);
+
+router.patch(
+  "/:id/remove-staff",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.removeStaff
+);
+
 export const PropertyInfoRoutes = router;

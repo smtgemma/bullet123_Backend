@@ -29,7 +29,6 @@ model User {
   Subscription       Subscription[]
   Municipality       Municipality?  @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
-  teams              Team[]
   tasks              Task[]         @relation(name: "TaskAssignee")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
@@ -221,7 +220,6 @@ model Municipality {
   updatedAt  DateTime       @updatedAt
 
   properties PropertyInfo[]
-  teams      Team[]
   staffs     User[]         @relation(name: "StaffMunicipality")
 
   @@map("municipalities")
@@ -243,24 +241,10 @@ model PropertyInfo {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   assignedStaff    User[]
-  teams            Team[]
   tasks            Task[]
 
   @@index([municipalityId])
   @@map("property_infos")
-}
-
-model Team {
-  id             String       @id @default(cuid())
-  name           String
-  municipalityId String
-  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  members        User[]
-  properties     PropertyInfo[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  @@map("teams")
 }
 
 model Task {

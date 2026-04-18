@@ -12,8 +12,6 @@ const createPropertyInfoValidationSchema = z.object({
     disposition: z.string({ required_error: "Disposition is required" }),
     images: z.array(z.string()).optional(),
     assignedStaffIds: z.array(z.string()).optional(),
-    teamIds: z.array(z.string()).optional(),
-    teamName: z.string().optional(),
   }),
 });
 
@@ -29,12 +27,17 @@ const updatePropertyInfoValidationSchema = z.object({
     disposition: z.string().optional(),
     images: z.array(z.string()).optional(),
     assignedStaffIds: z.array(z.string()).optional(),
-    teamIds: z.array(z.string()).optional(),
-    teamName: z.string().optional(),
+  }),
+});
+
+const assignStaffValidationSchema = z.object({
+  body: z.object({
+    staffIds: z.array(z.string({ required_error: "Staff IDs are required" })),
   }),
 });
 
 export const PropertyInfoValidation = {
   createPropertyInfoValidationSchema,
   updatePropertyInfoValidationSchema,
+  assignStaffValidationSchema,
 };
