@@ -13,4 +13,6 @@ export interface IPropertyInfo {
   budgetSummary?: any;
   budgets?: any[];
   tasks?: any[];
+  documents?: any[];
+  messages?: any[];
 }

@@ -31,6 +31,7 @@ model User {
   assignedProperties PropertyInfo[]
   tasks              Task[]
   messages           Message[]
+  signedDocuments    Document[]     @relation("SignatoryUser")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -245,10 +246,33 @@ model PropertyInfo {
   tasks            Task[]
   budgets          Budget[]
   messages         Message[]
+  documents        Document[]
 
   @@index([municipalityId])
   @@map("property_infos")
 }
+
+model Document {
+  id                String       @id @default(uuid())
+  name              String
+  type              String
+  fileUrl           String
+  fileSize          String?
+  
+  isSigningRequired Boolean      @default(false)
+  signatoryId       String?
+  signatory         User?        @relation("SignatoryUser", fields: [signatoryId], references: [id])
+  signedAt          DateTime?
+  
+  propertyId        String
+  property          PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@map("documents")
+}
+
 
 model Message {
   id               String       @id @default(uuid())

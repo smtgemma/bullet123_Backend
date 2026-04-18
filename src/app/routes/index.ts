@@ -12,6 +12,7 @@ import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes"
 import { TaskRoutes } from "../modules/task/task.routes";
 import { BudgetRoutes } from "../modules/budget/budget.routes";
 import { MessageRoutes } from "../modules/message/message.routes";
+import { DocumentRoutes } from "../modules/document/document.routes";
 
 
 const router = Router();
@@ -70,6 +71,10 @@ const moduleRoutes = [
   {
     path: "/messages",
     route: MessageRoutes,
+  },
+  {
+    path: "/documents",
+    route: DocumentRoutes,
   },
 ];
 
