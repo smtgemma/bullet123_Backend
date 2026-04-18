@@ -242,10 +242,27 @@ model PropertyInfo {
   updatedAt        DateTime     @updatedAt
   assignedStaff    User[]
   tasks            Task[]
+  budgets          Budget[]
 
   @@index([municipalityId])
   @@map("property_infos")
 }
+
+model Budget {
+  id               String       @id @default(uuid())
+  description      String
+  budgetedAmount   Float
+  completedAmount  Float        @default(0)
+  
+  propertyId       String
+  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("budgets")
+}
+
 
 model Task {
   id          String       @id @default(uuid())

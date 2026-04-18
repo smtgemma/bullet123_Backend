@@ -10,6 +10,7 @@ import { meetingRoutes } from "../modules/meeting/meeting.route";
 import { MunicipalityRoutes } from "../modules/municipality/municipality.routes";
 import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes";
 import { TaskRoutes } from "../modules/task/task.routes";
+import { BudgetRoutes } from "../modules/budget/budget.routes";
 
 
 const router = Router();
@@ -60,6 +61,10 @@ const moduleRoutes = [
   {
     path: "/tasks",
     route: TaskRoutes,
+  },
+  {
+    path: "/budgets",
+    route: BudgetRoutes,
   },
 ];
 

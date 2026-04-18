@@ -109,6 +109,11 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
         orderBy: {
           dueDate: "asc"
         }
+      },
+      budgets: {
+        orderBy: {
+          createdAt: "desc"
+        }
       }
     },
   });
@@ -117,7 +122,22 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
     throw new ApiError(status.NOT_FOUND, "Property info not found!");
   }
 
-  return result;
+  // Calculate Budget Summary
+  const budgets = result.budgets || [];
+  const totalBudget = budgets.reduce((sum, item) => sum + item.budgetedAmount, 0);
+  const totalCompleted = budgets.reduce((sum, item) => sum + item.completedAmount, 0);
+  const totalRemaining = totalBudget - totalCompleted;
+  const overallCompletion = totalBudget > 0 ? (totalCompleted / totalBudget) * 100 : 0;
+
+  return {
+    ...result,
+    budgetSummary: {
+      totalBudget,
+      totalCompleted,
+      totalRemaining,
+      overallCompletion: parseFloat(overallCompletion.toFixed(2)),
+    }
+  };
 };
 
 const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyInfo>) => {
