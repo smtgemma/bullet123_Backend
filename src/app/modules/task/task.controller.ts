@@ -46,9 +46,59 @@ const deleteTask = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleTask = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await TaskService.getSingleTaskFromDB(id as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Task retrieved successfully!",
+    data: result,
+  });
+});
+
+const addAssignees = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { assigneeIds } = req.body;
+  const result = await TaskService.addAssigneesToTaskInDB(id as string, assigneeIds);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Assignees added successfully!",
+    data: result,
+  });
+});
+
+const removeAssignee = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { assigneeId } = req.body;
+  const result = await TaskService.removeAssigneeFromTaskInDB(id as string, assigneeId as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Assignee removed successfully!",
+    data: result,
+  });
+});
+
+const updateTask = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await TaskService.updateTaskIntoDB(id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Task updated successfully!",
+    data: result,
+  });
+});
+
 export const TaskController = {
   createTask,
   getTasksByProperty,
   updateTaskStatus,
   deleteTask,
+  getSingleTask,
+  addAssignees,
+  removeAssignee,
+  updateTask,
 };

@@ -29,7 +29,7 @@ model User {
   Subscription       Subscription[]
   Municipality       Municipality?  @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
-  tasks              Task[]         @relation(name: "TaskAssignee")
+  tasks              Task[]
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -258,8 +258,7 @@ model Task {
   propertyId  String
   property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   
-  assigneeId  String
-  assignee    User         @relation(name: "TaskAssignee", fields: [assigneeId], references: [id])
+  assignees   User[]
 
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

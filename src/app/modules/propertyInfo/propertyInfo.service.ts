@@ -97,7 +97,7 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
       },
       tasks: {
         include: {
-          assignee: {
+          assignees: {
             select: {
               id: true,
               fullName: true,

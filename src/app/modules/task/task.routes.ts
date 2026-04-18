@@ -27,10 +27,36 @@ router.patch(
   TaskController.updateTaskStatus
 );
 
+router.patch(
+  "/:id",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  validateRequest(TaskValidation.updateTaskValidationSchema),
+  TaskController.updateTask
+);
+
 router.delete(
   "/:id",
   auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
   TaskController.deleteTask
+);
+
+router.get(
+  "/:id",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.INSPECTOR),
+  TaskController.getSingleTask
+);
+
+router.patch(
+  "/:id/add-assignees",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  validateRequest(TaskValidation.addAssigneesValidationSchema),
+  TaskController.addAssignees
+);
+
+router.patch(
+  "/:id/remove-assignee",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  TaskController.removeAssignee
 );
 
 export const TaskRoutes = router;
