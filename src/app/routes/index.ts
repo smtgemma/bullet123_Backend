@@ -11,6 +11,7 @@ import { MunicipalityRoutes } from "../modules/municipality/municipality.routes"
 import { PropertyInfoRoutes } from "../modules/propertyInfo/propertyInfo.routes";
 import { TaskRoutes } from "../modules/task/task.routes";
 import { BudgetRoutes } from "../modules/budget/budget.routes";
+import { MessageRoutes } from "../modules/message/message.routes";
 
 
 const router = Router();
@@ -65,6 +66,10 @@ const moduleRoutes = [
   {
     path: "/budgets",
     route: BudgetRoutes,
+  },
+  {
+    path: "/messages",
+    route: MessageRoutes,
   },
 ];
 

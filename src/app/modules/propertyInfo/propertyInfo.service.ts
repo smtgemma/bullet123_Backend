@@ -14,7 +14,7 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
     throw new ApiError(status.NOT_FOUND, "Municipality profile not found for this user!");
   }
 
-  const { assignedStaffIds, ...propertyData } = payload;
+  const { assignedStaffIds, tasks, budgets, budgetSummary, ...propertyData } = payload;
 
   // Validate Staff IDs
   if (assignedStaffIds && assignedStaffIds.length > 0) {
@@ -147,7 +147,7 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
     throw new ApiError(status.NOT_FOUND, "Property info not found!");
   }
 
-  const { assignedStaffIds, ...updateData } = payload;
+  const { assignedStaffIds, tasks, budgets, budgetSummary, ...updateData } = payload;
 
   const result = await prisma.propertyInfo.update({
     where: { id },

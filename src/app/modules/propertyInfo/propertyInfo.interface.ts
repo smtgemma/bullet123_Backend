@@ -10,4 +10,7 @@ export interface IPropertyInfo {
   disposition: string;
   images: string[];
   assignedStaffIds?: string[];
+  budgetSummary?: any;
+  budgets?: any[];
+  tasks?: any[];
 }

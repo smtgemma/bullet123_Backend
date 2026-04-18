@@ -1,5 +1,6 @@
 import app from "./app";
 import { Server } from "http";
+import { initializeSocket } from "./app/utils/socket";
 import config from "./app/config";
 import { seedSuperAdmin } from "./seedSuperAdmin";
 import { connectRedis } from "./app/config/redis";
@@ -23,6 +24,9 @@ const main = async () => {
         `🚀 App is listening on: http://${config.host}:${config.port}`
       );
     });
+
+    // Initialize Socket.io
+    initializeSocket(server);
 
   } catch (err) {
     console.log(err);

@@ -30,6 +30,7 @@ model User {
   Municipality       Municipality?  @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
   tasks              Task[]
+  messages           Message[]
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -243,10 +244,28 @@ model PropertyInfo {
   assignedStaff    User[]
   tasks            Task[]
   budgets          Budget[]
+  messages         Message[]
 
   @@index([municipalityId])
   @@map("property_infos")
 }
+
+model Message {
+  id               String       @id @default(uuid())
+  content          String
+  
+  senderId         String
+  sender           User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  propertyId       String
+  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("messages")
+}
+
 
 model Budget {
   id               String       @id @default(uuid())
