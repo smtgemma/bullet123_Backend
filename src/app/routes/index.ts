@@ -13,6 +13,7 @@ import { TaskRoutes } from "../modules/task/task.routes";
 import { BudgetRoutes } from "../modules/budget/budget.routes";
 import { MessageRoutes } from "../modules/message/message.routes";
 import { DocumentRoutes } from "../modules/document/document.routes";
+import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.routes";
 
 
 const router = Router();
@@ -75,6 +76,10 @@ const moduleRoutes = [
   {
     path: "/documents",
     route: DocumentRoutes,
+  },
+  {
+    path: "/progress-photos",
+    route: ProgressPhotoRoutes,
   },
 ];
 

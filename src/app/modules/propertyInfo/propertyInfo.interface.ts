@@ -15,4 +15,5 @@ export interface IPropertyInfo {
   tasks?: any[];
   documents?: any[];
   messages?: any[];
+  progressPhotos?: any[];
 }

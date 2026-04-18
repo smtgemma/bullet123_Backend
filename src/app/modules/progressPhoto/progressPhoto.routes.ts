@@ -1,0 +1,29 @@
+import { Router } from "express";
+import { UserRole } from "@prisma/client";
+import auth from "../../middlewares/auth";
+import validateRequest from "../../middlewares/validateRequest";
+import { ProgressPhotoController } from "./progressPhoto.controller";
+import { ProgressPhotoValidation } from "./progressPhoto.validation";
+
+const router = Router();
+
+router.post(
+  "/upload",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.INSPECTOR, UserRole.CONTRACTOR),
+  validateRequest(ProgressPhotoValidation.createProgressPhotoValidationSchema),
+  ProgressPhotoController.uploadProgressPhoto
+);
+
+router.get(
+  "/property/:propertyId",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.INSPECTOR, UserRole.CONTRACTOR, UserRole.SUPER_ADMIN),
+  ProgressPhotoController.getProgressPhotosByProperty
+);
+
+router.delete(
+  "/:id",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  ProgressPhotoController.deleteProgressPhoto
+);
+
+export const ProgressPhotoRoutes = router;

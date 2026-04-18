@@ -32,6 +32,7 @@ model User {
   tasks              Task[]
   messages           Message[]
   signedDocuments    Document[]     @relation("SignatoryUser")
+  uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -247,10 +248,29 @@ model PropertyInfo {
   budgets          Budget[]
   messages         Message[]
   documents        Document[]
+  progressPhotos   ProgressPhoto[]
 
   @@index([municipalityId])
   @@map("property_infos")
 }
+
+model ProgressPhoto {
+  id               String       @id @default(uuid())
+  description      String
+  url              String
+  
+  uploaderId       String
+  uploader         User         @relation("PhotoUploader", fields: [uploaderId], references: [id])
+  
+  propertyId       String
+  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("progress_photos")
+}
+
 
 model Document {
   id                String       @id @default(uuid())
