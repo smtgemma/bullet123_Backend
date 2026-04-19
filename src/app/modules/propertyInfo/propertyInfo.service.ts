@@ -215,19 +215,55 @@ const deletePropertyInfoFromDB = async (id: string) => {
 };
 
 const getMyPropertiesFromDB = async (userId: string) => {
-  const municipality = await prisma.municipality.findUnique({
-    where: { userId },
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      Municipality: true,
+    },
   });
 
-  if (!municipality) {
-    throw new ApiError(status.NOT_FOUND, "Municipality not found!");
+  if (!user) {
+    throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-  const result = await prisma.propertyInfo.findMany({
-    where: { municipalityId: municipality.id },
-  });
+  // If the user is a municipality
+  if (user.role === "MUNICIPALITY" && user.Municipality) {
+    return await prisma.propertyInfo.findMany({
+      where: { municipalityId: user.Municipality.id },
+      include: {
+        assignedStaff: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePic: true,
+            role: true,
+          },
+        },
+      },
+    });
+  }
 
-  return result;
+  // If the user is a staff member (assigned to properties)
+  return await prisma.propertyInfo.findMany({
+    where: {
+      assignedStaff: {
+        some: { id: userId },
+      },
+    },
+    include: {
+      assignedStaff: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+        },
+      },
+      municipality: true,
+    },
+  });
 };
 
 const assignStaffToPropertyInDB = async (propertyId: string, staffIds: string[]) => {

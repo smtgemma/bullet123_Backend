@@ -35,7 +35,16 @@ router.get(
 
 router.get(
   "/my-properties",
-  auth(UserRole.MUNICIPALITY),
+  auth(
+    UserRole.MUNICIPALITY,
+    UserRole.REALTOR,
+    UserRole.CONTRACTOR,
+    UserRole.INSPECTOR,
+    UserRole.LENDER,
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN
+  ),
   PropertyInfoController.getMyProperties
 );
 
