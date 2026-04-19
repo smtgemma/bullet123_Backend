@@ -24,7 +24,6 @@ model User {
   isDeleted         Boolean        @default(false)
   Notifications     Notification[]
   Profile           Profile?
-  review            Review[]
   meetings           Meeting[]
   Subscription       Subscription[]
   Municipality       Municipality?  @relation(name: "MunicipalityUser")
@@ -34,6 +33,8 @@ model User {
   receivedMessages   Message[]      @relation("ReceivedMessages")
   signedDocuments    Document[]     @relation("SignatoryUser")
   uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
+  writtenReviews     Review[]       @relation("ReviewAuthor")
+  receivedReviews    Review[]       @relation("ProfessionalReviews")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -169,13 +170,15 @@ model Notification {
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  rating    Int
-  comment   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  rating         Int
+  comment        String
+  reviewerId     String
+  reviewer       User     @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   User     @relation("ProfessionalReviews", fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Meeting {

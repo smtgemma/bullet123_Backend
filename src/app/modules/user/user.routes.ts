@@ -13,6 +13,9 @@ const router = Router();
 
 router.get("/", UserController.getAllUser);
 router.get("/admin/get-all", UserController.getAllUsers);
+
+router.get("/professionals/all", auth(), UserController.getProfessionals);
+
 router.get(
   "/:userId",
   auth(),

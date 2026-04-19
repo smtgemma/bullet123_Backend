@@ -328,7 +328,6 @@ const inviteUserToAdminToDB = async (payload: { email: string, fullName: string,
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
   const include = {
     Profile: true,
-    artwork: true,
     Subscription: {
       include: {
         plan: true,
@@ -376,6 +375,71 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
   };
 };
 
+const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
+  const include = {
+    Profile: true,
+    receivedReviews: {
+      include: {
+        reviewer: {
+          select: {
+            id: true,
+            fullName: true,
+            profilePic: true,
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" as const }
+    },
+    _count: {
+      select: {
+        assignedProperties: true,
+        receivedReviews: true,
+      }
+    }
+  };
+
+  const queryBuilder = new QueryBuilder(prisma.user, query)
+    .search(["fullName", "email"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+    .include(include);
+
+  // Filter only professionals (by Roles) and not deleted
+  // If the frontend passed a specific role e.g. ?role=CONTRACTOR, QueryBuilder handles it via filter()
+  // Otherwise default to including all professional roles:
+  const allowedRoles = ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER", "ADMIN", "MUNICIPALITY", "STAFF", "SUPER_ADMIN", "COMMUNITY_PARTNER", "BUYER", "SELLER"];
+  
+  const rawFilterInput: any = { isDeleted: false };
+  if (!query.role) {
+     rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
+  }
+
+  queryBuilder.rawFilter(rawFilterInput);
+
+  const result = await queryBuilder.execute();
+  const meta = await queryBuilder.countTotal();
+
+  const data = result.map((user: any) => {
+    const { password, ...rest } = user;
+    
+    // Calculate average rating
+    const reviews = user.receivedReviews || [];
+    const totalRating = reviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+    const avgRating = reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+
+    return {
+      ...rest,
+      projectsCompleted: user._count?.assignedProperties || 0,
+      totalReviews: user._count?.receivedReviews || 0,
+      averageRating: parseFloat(avgRating as string)
+    };
+  });
+
+  return { meta, data };
+};
+
 
 export const UserService = {
   getAllUserFromDB,
@@ -387,5 +451,6 @@ export const UserService = {
   inviteUserToAdminToDB,
   getAllAdminFromDB,
   deleteMeFromDB,
-  getAllUsersFromDB
+  getAllUsersFromDB,
+  getProfessionalsFromDB
 };

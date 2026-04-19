@@ -5,13 +5,13 @@ import { ReviewServices } from "./review.services";
 
 // Create Review
 const createReview = catchAsync(async (req, res) => {
-  const { rating, comment } = req.body;
+  const { rating, comment, professionalId } = req.body;
 
-  const userId=req.user?.id
-  if (!rating || !comment || !userId) {
-    throw new AppError(status.BAD_REQUEST, "rating, comment, and userId are required");
+  const reviewerId = req.user?.id;
+  if (!rating || !comment || !reviewerId || !professionalId) {
+    throw new AppError(status.BAD_REQUEST, "rating, comment, and professionalId are required");
   }
-  const result = await ReviewServices.createReview({ rating, comment, userId });
+  const result = await ReviewServices.createReview({ rating, comment, reviewerId, professionalId });
   
   res.status(status.CREATED).json({
     success: true,
@@ -33,6 +33,13 @@ const getReviewById = catchAsync(async (req, res) => {
   res.status(status.OK).json({ success: true, data: review });
 });
 
+// Get Reviews by Professional
+const getReviewsByProfessional = catchAsync(async (req, res) => {
+  const { professionalId } = req.params;
+  const reviews = await ReviewServices.getReviewsByProfessional(professionalId);
+  res.status(status.OK).json({ success: true, data: reviews });
+});
+
 // Update Review
 const updateReview = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -52,6 +59,7 @@ export const ReviewController = {
   createReview,
   getAllReviews,
   getReviewById,
+  getReviewsByProfessional,
   updateReview,
   deleteReview,
 };

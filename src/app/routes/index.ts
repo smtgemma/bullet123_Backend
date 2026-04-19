@@ -14,7 +14,7 @@ import { BudgetRoutes } from "../modules/budget/budget.routes";
 import { MessageRoutes } from "../modules/message/message.routes";
 import { DocumentRoutes } from "../modules/document/document.routes";
 import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.routes";
-
+import { reviewRoute } from "../modules/review/review.route";
 
 const router = Router();
 
@@ -80,6 +80,10 @@ const moduleRoutes = [
   {
     path: "/progress-photos",
     route: ProgressPhotoRoutes,
+  },
+  {
+    path: "/reviews",
+    route: reviewRoute,
   },
 ];
 

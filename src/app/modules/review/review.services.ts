@@ -2,7 +2,7 @@ import status from "http-status";
 import AppError from "../../errors/AppError";
 import prisma from "../../utils/prisma";
 
-const createReview = async (payload: { rating: number; comment: string; userId: string }) => {
+const createReview = async (payload: { rating: number; comment: string; reviewerId: string; professionalId: string }) => {
   if (!payload) throw new AppError(status.BAD_REQUEST, "Payload is required!");
   
   const review = await prisma.review.create({
@@ -15,13 +15,21 @@ const getReviewById = async (id: string) => {
   const review = await prisma.review.findUnique({
     where: { id },
     include:{
-        user:{
+        reviewer:{
             select:{
+                id: true,
                 fullName:true,
                 email:true,
-                lastActiveAt:true,
-                isSubscribed:true,
                 profilePic :true,
+            }
+        },
+        professional:{
+            select:{
+                id: true,
+                fullName:true,
+                email:true,
+                profilePic :true,
+                role: true,
             }
         }
     }
@@ -34,13 +42,38 @@ const getAllReviews = async () => {
   const reviews = await prisma.review.findMany({
     orderBy: { createdAt: "desc" },
      include:{
-        user:{
+        reviewer:{
             select:{
-               fullName:true,
+                id: true,
+                fullName:true,
                 email:true,
-                lastActiveAt:true,
-                isSubscribed:true,
                 profilePic :true,
+            }
+        },
+        professional:{
+            select:{
+               id: true,
+               fullName:true,
+               profilePic :true,
+               role: true,
+            }
+        }
+    }
+  });
+  return reviews;
+};
+
+const getReviewsByProfessional = async (professionalId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: { professionalId },
+    orderBy: { createdAt: "desc" },
+     include: {
+        reviewer: {
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                profilePic: true,
             }
         }
     }
@@ -67,6 +100,7 @@ export const ReviewServices = {
   createReview,
   getReviewById,
   getAllReviews,
+  getReviewsByProfessional,
   updateReview,
   deleteReview,
 };

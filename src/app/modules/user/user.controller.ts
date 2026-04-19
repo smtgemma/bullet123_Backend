@@ -126,6 +126,16 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+const getProfessionals = catchAsync(async (req, res) => {
+  const result = await UserService.getProfessionalsFromDB(req.query);
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Professionals retrieved successfully",
+    data: result.data,
+    meta: result.meta
+  });
+});
+
 export const UserController = {
   getAllUser,
   updateUser,
@@ -134,6 +144,7 @@ export const UserController = {
   updateUserProfile,
   chengeUserRoleIntoDB,inviteUserToAdmin,
   getAllAdminFromDB,
-  deleteMe
-,getAllUsers
+  deleteMe,
+  getAllUsers,
+  getProfessionals
 };
