@@ -35,6 +35,7 @@ model User {
   uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
   writtenReviews     Review[]       @relation("ReviewAuthor")
   receivedReviews    Review[]       @relation("ProfessionalReviews")
+  successStories     SuccessStory[] @relation("UserSuccessStories")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -444,3 +445,18 @@ enum PlanCategory {
   ARTIST
 }
 
+model SuccessStory {
+  id              String   @id @default(uuid())
+  title           String
+  propertyAddress String
+  price           Float?
+  description     String
+  beforeImages    String[] 
+  afterImages     String[] 
+  userId          String   
+  user            User     @relation("UserSuccessStories", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("success_stories")
+}

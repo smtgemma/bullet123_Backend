@@ -15,6 +15,7 @@ import { MessageRoutes } from "../modules/message/message.routes";
 import { DocumentRoutes } from "../modules/document/document.routes";
 import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.routes";
 import { reviewRoute } from "../modules/review/review.route";
+import { SuccessStoryRoutes } from "../modules/successStory/successStory.route";
 
 const router = Router();
 
@@ -84,6 +85,10 @@ const moduleRoutes = [
   {
     path: "/reviews",
     route: reviewRoute,
+  },
+  {
+    path: "/success-stories",
+    route: SuccessStoryRoutes,
   },
 ];
 
