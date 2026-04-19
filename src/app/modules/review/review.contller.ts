@@ -12,7 +12,7 @@ const createReview = catchAsync(async (req, res) => {
     throw new AppError(status.BAD_REQUEST, "rating, comment, and professionalId are required");
   }
   const result = await ReviewServices.createReview({ rating, comment, reviewerId, professionalId });
-  
+
   res.status(status.CREATED).json({
     success: true,
     message: "Review created successfully",
@@ -29,14 +29,14 @@ const getAllReviews = catchAsync(async (req, res) => {
 // Get Single Review
 const getReviewById = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const review = await ReviewServices.getReviewById(id);
+  const review = await ReviewServices.getReviewById(id as string);
   res.status(status.OK).json({ success: true, data: review });
 });
 
 // Get Reviews by Professional
 const getReviewsByProfessional = catchAsync(async (req, res) => {
   const { professionalId } = req.params;
-  const reviews = await ReviewServices.getReviewsByProfessional(professionalId);
+  const reviews = await ReviewServices.getReviewsByProfessional(professionalId as string);
   res.status(status.OK).json({ success: true, data: reviews });
 });
 
@@ -44,14 +44,14 @@ const getReviewsByProfessional = catchAsync(async (req, res) => {
 const updateReview = catchAsync(async (req, res) => {
   const { id } = req.params;
   const payload = req.body;
-  const updated = await ReviewServices.updateReview(id, payload);
+  const updated = await ReviewServices.updateReview(id as string, payload);
   res.status(status.OK).json({ success: true, message: "Review updated", data: updated });
 });
 
 // Delete Review
 const deleteReview = catchAsync(async (req, res) => {
   const { id } = req.params;
-  await ReviewServices.deleteReview(id);
+  await ReviewServices.deleteReview(id as string);
   res.status(status.OK).json({ success: true, message: "Review deleted" });
 });
 
