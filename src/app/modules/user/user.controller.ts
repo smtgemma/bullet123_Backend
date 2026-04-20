@@ -60,7 +60,7 @@ const updateUserProfile = catchAsync(async (req, res) => {
 const getSingleUserById = catchAsync(async (req, res) => {
   const { userId } = req.params;
 
-  const result = await UserService.getSingleUserByIdFromDB(userId);
+  const result = await UserService.getSingleUserByIdFromDB(userId as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -72,7 +72,7 @@ const getSingleUserById = catchAsync(async (req, res) => {
 const deleteUser = catchAsync(async (req, res) => {
   const { userId } = req.params;
 
-  await UserService.deleteUserFromDB(userId);
+  await UserService.deleteUserFromDB(userId as string);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -96,7 +96,7 @@ const chengeUserRoleIntoDB= catchAsync(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;    
 
-  const result = await UserService.chengeUserRoleIntoDB(id, role);
+  const result = await UserService.chengeUserRoleIntoDB(id as string, role);
 
   sendResponse(res, {
     statusCode: status.OK,

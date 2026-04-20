@@ -15,7 +15,7 @@ const createPlan = catchAsync(async (req, res) => {
 });
 
 const updatePlan = catchAsync(async (req, res) => {
-  const result = await PlanServices.updatePlan(req.params.planId, req.body);
+  const result = await PlanServices.updatePlan(req.params.planId as string, req.body);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Plan updated successfully!",
@@ -33,7 +33,7 @@ const getAllPlans = catchAsync(async (req, res) => {
 });
 
 const getPlanById = catchAsync(async (req, res) => {
-  const result = await PlanServices.getPlanById(req.params.planId);
+  const result = await PlanServices.getPlanById(req.params.planId as string);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Plan fetched successfully!",
@@ -42,7 +42,7 @@ const getPlanById = catchAsync(async (req, res) => {
 });
 
 const deletePlan = catchAsync(async (req, res) => {
-  const result = await PlanServices.deletePlan(req.params.planId);
+  const result = await PlanServices.deletePlan(req.params.planId as string);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Plan deleted successfully!",
@@ -116,7 +116,7 @@ const getAllFeaturedItems = catchAsync(async (req, res) => {
 
 const setDiscount = catchAsync(async (req, res) => {
   const { planId } = req.params;
-  const result = await PlanServices.setDiscount(planId, req.body);
+  const result = await PlanServices.setDiscount(planId as string, req.body);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Discount applied successfully!",
@@ -126,7 +126,7 @@ const setDiscount = catchAsync(async (req, res) => {
 
 const removeDiscount = catchAsync(async (req, res) => {
   const { planId } = req.params;
-  const result = await PlanServices.removeDiscount(planId);
+  const result = await PlanServices.removeDiscount(planId as string);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Discount removed successfully!",
@@ -137,7 +137,7 @@ const removeDiscount = catchAsync(async (req, res) => {
 
 const updateDiscount = catchAsync(async (req, res) => {
   const { planId } = req.params;
-  const result = await PlanServices.updateDiscount(planId, req.body);
+  const result = await PlanServices.updateDiscount(planId as string, req.body);
   sendResponse(res, {
     statusCode: status.OK,
     message: "Discount updated successfully!",

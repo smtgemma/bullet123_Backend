@@ -324,6 +324,78 @@ const removeStaffFromPropertyInDB = async (propertyId: string, staffId: string) 
   return result;
 };
 
+function parseCSVLine(line: string) {
+    const result = [];
+    let currentStr = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"' && line[i+1] === '"') {
+            currentStr += '"';
+            i++; 
+        } else if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(currentStr.trim());
+            currentStr = '';
+        } else {
+            currentStr += char;
+        }
+    }
+    result.push(currentStr.trim());
+    return result;
+}
+
+const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found for this user!");
+  }
+
+  const csvText = fileBuffer.toString("utf-8");
+  const lines = csvText.split(/\r?\n/).filter((line) => line.trim() !== "");
+  
+  if (lines.length <= 1) {
+    throw new ApiError(status.BAD_REQUEST, "CSV file is empty or missing data rows");
+  }
+
+  const headers = parseCSVLine(lines[0]);
+  const properties = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const currentline = parseCSVLine(lines[i]);
+    
+    const obj: any = {};
+    for (let j = 0; j < headers.length; j++) {
+       obj[headers[j]] = currentline[j];
+    }
+    
+    properties.push({
+      municipalityId: municipality.id,
+      propertyAddress: obj.propertyAddress || obj.address || "No Address Provided",
+      parcelId: obj.parcelId || "N/A",
+      propertyType: obj.propertyType || "Commercial",
+      vacancyStatus: obj.vacancyStatus || "Vacant",
+      zone: obj.zone || "Default Zone",
+      disposition: obj.disposition || "Default Disposition",
+      description: obj.description || "",
+      askingPrice: Number(obj.askingPrice) || 0,
+      dispositionRules: obj.dispositionRules || "",
+      images: [],
+    });
+  }
+
+  const result = await prisma.propertyInfo.createMany({
+    data: properties,
+    skipDuplicates: true, // Requires Prisma 2.20+
+  });
+
+  return result;
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -333,4 +405,5 @@ export const PropertyInfoService = {
   getMyPropertiesFromDB,
   assignStaffToPropertyInDB,
   removeStaffFromPropertyInDB,
+  bulkUploadPropertyInfosFromCSV,
 };

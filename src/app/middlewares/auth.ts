@@ -103,7 +103,7 @@ const auth = (...requiredRoles: UserRole[]) => {
       );
     }
 
-    req.user = verifiedUser as Express.User;
+    req.user = verifiedUser as any;
 
     // Update lastActiveAt (non-blocking)
     prisma.user

@@ -30,7 +30,7 @@ const getAllSubscription = catchAsync(async (req, res) => {
 
 const getSingleSubscription = catchAsync(async (req, res) => {
   const result = await SubscriptionServices.getSingleSubscription(
-    req.params.subscriptionId
+    req.params.subscriptionId as string
   );
   sendResponse(res, {
     statusCode: status.OK,
@@ -55,7 +55,7 @@ const updateSubscription = catchAsync(async (req, res) => {
   const { subscriptionId } = req.params;
 
   const result = await SubscriptionServices.updateSubscription(
-    subscriptionId,
+    subscriptionId as string,
     req.body
   );
   sendResponse(res, {
@@ -67,7 +67,7 @@ const updateSubscription = catchAsync(async (req, res) => {
 
 const deleteSubscription = catchAsync(async (req, res) => {
   const result = await SubscriptionServices.deleteSubscription(
-    req.params.subscriptionId
+    req.params.subscriptionId as string
   );
 
   sendResponse(res, {
@@ -95,7 +95,7 @@ const cancelSubscription = catchAsync(async (req, res) => {
   const userId = req?.user?.id as string;
 
   const result = await SubscriptionServices.cancelSubscription(
-    subscriptionId,
+    subscriptionId as string,
     userId
   );
 
@@ -112,7 +112,7 @@ const reactivateSubscription = catchAsync(async (req, res) => {
   const userId = req?.user?.id as string;
 
   const result = await SubscriptionServices.reactivateSubscription(
-    subscriptionId,
+    subscriptionId as string,
     userId
   );
 

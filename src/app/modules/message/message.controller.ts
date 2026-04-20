@@ -31,7 +31,7 @@ const getMessagesByProperty = catchAsync(async (req, res) => {
 const getConversationWithUser = catchAsync(async (req, res) => {
   const userId = req.user?.id as string;
   const { targetUserId } = req.params;
-  const result = await MessageService.getConversationWithUserFromDB(userId, targetUserId);
+  const result = await MessageService.getConversationWithUserFromDB(userId, targetUserId as string);
 
   sendResponse(res, {
     statusCode: status.OK,

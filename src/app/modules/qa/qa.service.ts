@@ -27,19 +27,19 @@ const createQuestion = async (payload: Partial<Question> & { authorId: string })
 const getAllQuestions = async (query: Record<string, unknown>) => {
   // Custom query builder behavior for Trending / Unanswered
   const rawFilterInput: any = {};
-  
+
   if (query.filterType === "unanswered") {
     rawFilterInput.answers = { none: {} };
   }
-  
+
   // Tag filtering (Array match check)
   if (query.tag) {
-     rawFilterInput.tags = { has: query.tag as string };
+    rawFilterInput.tags = { has: query.tag as string };
   }
 
   // Inject sorting for trending before building query
   if (query.filterType === "trending") {
-    query.sort = "-upvotes,-views"; 
+    query.sort = "-upvotes,-views";
   }
 
   const queryBuilder = new QueryBuilder(prisma.question, query)
@@ -113,7 +113,7 @@ const upvoteQuestion = async (id: string) => {
 const updateQuestion = async (id: string, userId: string, payload: Partial<Question>) => {
   const question = await prisma.question.findUnique({ where: { id } });
   if (!question) throw new AppError(status.NOT_FOUND, "Question not found");
-  
+
   if (question.authorId !== userId) {
     throw new AppError(status.FORBIDDEN, "Not authorized to update this question");
   }
@@ -126,15 +126,15 @@ const updateQuestion = async (id: string, userId: string, payload: Partial<Quest
 };
 
 const deleteQuestion = async (id: string, userId: string, role: string) => {
-   const question = await prisma.question.findUnique({ where: { id } });
-   if (!question) throw new AppError(status.NOT_FOUND, "Question not found");
-   
-   if (question.authorId !== userId && role !== "SUPER_ADMIN" && role !== "ADMIN") {
-      throw new AppError(status.FORBIDDEN, "Not authorized to delete this question");
-   }
+  const question = await prisma.question.findUnique({ where: { id } });
+  if (!question) throw new AppError(status.NOT_FOUND, "Question not found");
 
-   await prisma.question.delete({ where: { id } });
-   return true;
+  if (question.authorId !== userId && role !== "SUPER_ADMIN" && role !== "ADMIN") {
+    throw new AppError(status.FORBIDDEN, "Not authorized to delete this question");
+  }
+
+  await prisma.question.delete({ where: { id } });
+  return true;
 };
 
 // --- Answers ---
@@ -154,6 +154,7 @@ const createAnswer = async (payload: Partial<Answer> & { authorId: string, quest
   return answer;
 };
 
+
 const upvoteAnswer = async (id: string) => {
   const answer = await prisma.answer.update({
     where: { id },
@@ -163,13 +164,13 @@ const upvoteAnswer = async (id: string) => {
 };
 
 const acceptAnswer = async (id: string, userId: string) => {
-  const answer = await prisma.answer.findUnique({ 
+  const answer = await prisma.answer.findUnique({
     where: { id },
     include: { question: true }
   });
 
   if (!answer) throw new AppError(status.NOT_FOUND, "Answer not found");
-  
+
   if (answer.question.authorId !== userId) {
     throw new AppError(status.FORBIDDEN, "Only the question author can accept an answer");
   }
@@ -185,7 +186,7 @@ const acceptAnswer = async (id: string, userId: string) => {
 const updateAnswer = async (id: string, userId: string, payload: Partial<Answer>) => {
   const answer = await prisma.answer.findUnique({ where: { id } });
   if (!answer) throw new AppError(status.NOT_FOUND, "Answer not found");
-  
+
   if (answer.authorId !== userId) {
     throw new AppError(status.FORBIDDEN, "Not authorized to update this answer");
   }
@@ -198,15 +199,15 @@ const updateAnswer = async (id: string, userId: string, payload: Partial<Answer>
 };
 
 const deleteAnswer = async (id: string, userId: string, role: string) => {
-   const answer = await prisma.answer.findUnique({ where: { id } });
-   if (!answer) throw new AppError(status.NOT_FOUND, "Answer not found");
-   
-   if (answer.authorId !== userId && role !== "SUPER_ADMIN" && role !== "ADMIN") {
-      throw new AppError(status.FORBIDDEN, "Not authorized to delete this answer");
-   }
+  const answer = await prisma.answer.findUnique({ where: { id } });
+  if (!answer) throw new AppError(status.NOT_FOUND, "Answer not found");
 
-   await prisma.answer.delete({ where: { id } });
-   return true;
+  if (answer.authorId !== userId && role !== "SUPER_ADMIN" && role !== "ADMIN") {
+    throw new AppError(status.FORBIDDEN, "Not authorized to delete this answer");
+  }
+
+  await prisma.answer.delete({ where: { id } });
+  return true;
 };
 
 export const QaServices = {
@@ -216,7 +217,7 @@ export const QaServices = {
   upvoteQuestion,
   updateQuestion,
   deleteQuestion,
-  
+
   createAnswer,
   upvoteAnswer,
   acceptAnswer,
