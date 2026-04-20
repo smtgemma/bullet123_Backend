@@ -40,7 +40,7 @@ export const getAllSubscribers = catchAsync(async (req, res) => {
 export const getSubscriberById = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await SubscriberService.getSubscriberById(id);
+  const result = await SubscriberService.getSubscriberById(id as string);
 
   if (!result) {
     throw new Error("Subscriber not found");
@@ -57,7 +57,7 @@ export const getSubscriberById = catchAsync(async (req, res) => {
 export const updateSubscriber = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await SubscriberService.updateSubscriber(id, req.body);
+  const result = await SubscriberService.updateSubscriber(id as string, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,

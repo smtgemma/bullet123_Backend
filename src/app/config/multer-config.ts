@@ -275,3 +275,14 @@ export const videoUpload = multer({
     }
   },
 });
+
+export const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "text/csv" || file.mimetype === "application/vnd.ms-excel") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only CSV files are allowed") as unknown as null, false);
+    }
+  },
+});
