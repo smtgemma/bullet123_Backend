@@ -8,7 +8,7 @@ const createSuccessStory = async (payload: Partial<SuccessStory> & { userId: str
   if (!payload.title || !payload.propertyAddress || !payload.description) {
     throw new AppError(status.BAD_REQUEST, "Title, Property Address, and Description are required!");
   }
-  
+
   const successStory = await prisma.successStory.create({
     data: {
       title: payload.title,
@@ -20,7 +20,7 @@ const createSuccessStory = async (payload: Partial<SuccessStory> & { userId: str
       userId: payload.userId,
     },
   });
-  
+
   return successStory;
 };
 
@@ -28,15 +28,15 @@ const getSuccessStoryById = async (id: string) => {
   const successStory = await prisma.successStory.findUnique({
     where: { id },
     include: {
-        user: {
-            select: {
-                id: true,
-                fullName: true,
-                email: true,
-                profilePic: true,
-                role: true,
-            }
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
         }
+      }
     }
   });
   if (!successStory) throw new AppError(status.NOT_FOUND, "Success Story not found");
@@ -70,14 +70,14 @@ const getAllSuccessStories = async (query: Record<string, unknown>) => {
     .paginate()
     .fields()
     .include({
-        user: {
-            select: {
-                id: true,
-                fullName: true,
-                profilePic: true,
-                role: true
-            }
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          profilePic: true,
+          role: true
         }
+      }
     });
 
   const result = await queryBuilder.execute();
@@ -109,7 +109,7 @@ const updateSuccessStory = async (id: string, userId: string, payload: Partial<S
 const deleteSuccessStory = async (id: string, userId: string) => {
   const existing = await prisma.successStory.findUnique({ where: { id } });
   if (!existing) throw new AppError(status.NOT_FOUND, "Success Story not found");
-  
+
   if (existing.userId !== userId) {
     throw new AppError(status.FORBIDDEN, "You do not have permission to delete this.");
   }
@@ -119,6 +119,8 @@ const deleteSuccessStory = async (id: string, userId: string) => {
   });
   return true;
 };
+
+
 
 export const SuccessStoryServices = {
   createSuccessStory,

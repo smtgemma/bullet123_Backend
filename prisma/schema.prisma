@@ -36,6 +36,8 @@ model User {
   writtenReviews     Review[]       @relation("ReviewAuthor")
   receivedReviews    Review[]       @relation("ProfessionalReviews")
   successStories     SuccessStory[] @relation("UserSuccessStories")
+  questions          Question[]     @relation("UserQuestions")
+  answers            Answer[]       @relation("UserAnswers")
   municipalityId     String?
   staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
@@ -459,4 +461,42 @@ model SuccessStory {
   updatedAt       DateTime @updatedAt
 
   @@map("success_stories")
+}
+
+model Question {
+  id          String   @id @default(uuid())
+  title       String
+  details     String
+  tags        String[]
+  category    String?
+  views       Int      @default(0)
+  upvotes     Int      @default(0)
+
+  authorId    String
+  author      User     @relation("UserQuestions", fields: [authorId], references: [id], onDelete: Cascade)
+
+  answers     Answer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("questions")
+}
+
+model Answer {
+  id          String   @id @default(uuid())
+  content     String
+  upvotes     Int      @default(0)
+  isAccepted  Boolean  @default(false)
+
+  authorId    String
+  author      User     @relation("UserAnswers", fields: [authorId], references: [id], onDelete: Cascade)
+
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("answers")
 }
