@@ -131,6 +131,24 @@ const deleteAnswer = catchAsync(async (req, res) => {
   });
 });
 
+const getTopContributors = catchAsync(async (req, res) => {
+  const result = await QaServices.getTopContributorsFromDB();
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Top contributors retrieved successfully",
+    data: result,
+  });
+});
+
+const getPopularTags = catchAsync(async (req, res) => {
+  const result = await QaServices.getPopularTagsFromDB();
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Popular tags retrieved successfully",
+    data: result,
+  });
+});
+
 export const QaController = {
   createQuestion,
   getAllQuestions,
@@ -143,5 +161,8 @@ export const QaController = {
   upvoteAnswer,
   updateAnswer,
   acceptAnswer,
-  deleteAnswer
+  deleteAnswer,
+
+  getTopContributors,
+  getPopularTags
 };

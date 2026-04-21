@@ -11,6 +11,7 @@ router.post(
   "/upload",
   auth(
     UserRole.MUNICIPALITY,
+    UserRole.SELLER,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.REALTOR,
@@ -27,6 +28,7 @@ router.get(
   "/property/:propertyId",
   auth(
     UserRole.MUNICIPALITY,
+    UserRole.SELLER,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.REALTOR,
@@ -42,6 +44,7 @@ router.get(
   "/:id",
   auth(
     UserRole.MUNICIPALITY,
+    UserRole.SELLER,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.REALTOR,
@@ -57,6 +60,7 @@ router.patch(
   "/:id",
   auth(
     UserRole.MUNICIPALITY,
+    UserRole.SELLER,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.REALTOR,
@@ -70,7 +74,7 @@ router.patch(
 
 router.delete(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   ProgressPhotoController.deleteProgressPhoto
 );
 

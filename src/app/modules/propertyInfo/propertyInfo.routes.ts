@@ -11,7 +11,7 @@ const router = Router();
 
 router.post(
   "/create",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
@@ -37,6 +37,7 @@ router.get(
   "/my-properties",
   auth(
     UserRole.MUNICIPALITY,
+    UserRole.SELLER,
     UserRole.REALTOR,
     UserRole.CONTRACTOR,
     UserRole.INSPECTOR,
@@ -55,7 +56,7 @@ router.get(
 
 router.patch(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
@@ -78,21 +79,27 @@ router.patch(
 
 router.delete(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.deletePropertyInfo
 );
 
 router.patch(
   "/:id/assign-staff",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(PropertyInfoValidation.assignStaffValidationSchema),
   PropertyInfoController.assignStaff
 );
 
 router.patch(
   "/:id/remove-staff",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.removeStaff
+);
+
+router.post(
+  "/:id/invite-professional",
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.inviteProfessional
 );
 
 export const PropertyInfoRoutes = router;

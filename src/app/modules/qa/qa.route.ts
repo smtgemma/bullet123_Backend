@@ -26,6 +26,12 @@ router.patch("/questions/:id", auth(), QaController.updateQuestion);
 // 6. Delete a question
 router.delete("/questions/:id", auth(), QaController.deleteQuestion);
 
+// 7. Get top contributors
+router.get("/top-contributors", QaController.getTopContributors);
+
+// 8. Get popular tags
+router.get("/popular-tags", QaController.getPopularTags);
+
 // ========================
 // ANSWERS
 // ========================

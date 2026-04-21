@@ -102,6 +102,17 @@ const removeStaff = catchAsync(async (req, res) => {
   });
 });
 
+const inviteProfessional = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await PropertyInfoService.inviteProfessionalToPropertyInDB(id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Professional invited and assigned successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -111,4 +122,5 @@ export const PropertyInfoController = {
   getMyProperties,
   assignStaff,
   removeStaff,
+  inviteProfessional,
 };

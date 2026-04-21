@@ -17,6 +17,7 @@ import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.rout
 import { reviewRoute } from "../modules/review/review.route";
 import { SuccessStoryRoutes } from "../modules/successStory/successStory.route";
 import { QaRoutes } from "../modules/qa/qa.route";
+import { SellerRoutes } from "../modules/seller/seller.routes";
 
 const router = Router();
 
@@ -94,6 +95,10 @@ const moduleRoutes = [
   {
     path: "/qa",
     route: QaRoutes,
+  },
+  {
+    path: "/sellers",
+    route: SellerRoutes,
   },
 ];
 

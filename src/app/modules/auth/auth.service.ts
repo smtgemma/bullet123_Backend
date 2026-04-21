@@ -272,6 +272,16 @@ const verifyOTP = async (email: string, otpCode: string) => {
         },
       });
     }
+
+    // Auto-create Seller profile if role is SELLER
+    if (user.role === UserRole.SELLER) {
+      await tx.seller.create({
+        data: {
+          userId: user.id,
+          email: user.email,
+        },
+      });
+    }
   });
 
   const jwtPayload = {
@@ -628,7 +638,7 @@ export const refreshToken = async (token: string) => {
 };
 
 // ── Create Staff Account (Invited by Admin/Municipality) ──────────────────
-const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole; municipalityId: string }) => {
+const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole; municipalityId?: string; sellerId?: string }) => {
   const normalizedEmail = payload.email.toLowerCase().trim();
 
   const isUserExist = await prisma.user.findUnique({
@@ -649,6 +659,7 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
       role: payload.role,
       isVerified: false,
       municipalityId: payload.municipalityId,
+      sellerId: payload.sellerId,
     },
   });
 

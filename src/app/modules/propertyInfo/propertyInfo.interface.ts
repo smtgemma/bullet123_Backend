@@ -1,5 +1,6 @@
 export interface IPropertyInfo {
-  municipalityId: string;
+  municipalityId?: string;
+  sellerId?: string;
   propertyAddress: string;
   parcelId: number;
   zone: string;

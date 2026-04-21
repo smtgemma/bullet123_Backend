@@ -210,6 +210,45 @@ const deleteAnswer = async (id: string, userId: string, role: string) => {
   return true;
 };
 
+const getTopContributorsFromDB = async () => {
+  const result = await prisma.user.findMany({
+    take: 5,
+    orderBy: {
+      answers: {
+        _count: "desc"
+      }
+    },
+    select: {
+      id: true,
+      fullName: true,
+      profilePic: true,
+      role: true,
+      _count: {
+        select: { answers: true }
+      }
+    }
+  });
+  return result;
+};
+
+const getPopularTagsFromDB = async () => {
+  const questions = await prisma.question.findMany({
+    select: { tags: true }
+  });
+  
+  const tagsCount: Record<string, number> = {};
+  questions.forEach(q => {
+    q.tags.forEach(tag => {
+      tagsCount[tag] = (tagsCount[tag] || 0) + 1;
+    });
+  });
+  
+  return Object.entries(tagsCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([tag, count]) => ({ tag, count }));
+};
+
 export const QaServices = {
   createQuestion,
   getAllQuestions,
@@ -222,5 +261,8 @@ export const QaServices = {
   upvoteAnswer,
   acceptAnswer,
   updateAnswer,
-  deleteAnswer
+  deleteAnswer,
+
+  getTopContributorsFromDB,
+  getPopularTagsFromDB
 };

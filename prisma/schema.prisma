@@ -7,39 +7,42 @@ datasource db {
 }
 
 model User {
-  id                String         @id @default(uuid())
-  fullName          String
-  email             String         @unique
-  password          String
-  profilePic        String?
-  passwordChangedAt DateTime?
-  isVerified        Boolean        @default(false)
-  role              UserRole       @default(USER)
-  isSubscribed      Boolean        @default(false)
-  planExpiration    DateTime?
-  lastActiveAt      DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  stripeCustomerId  String?
-  isDeleted         Boolean        @default(false)
-  Notifications     Notification[]
-  Profile           Profile?
-  meetings           Meeting[]
-  Subscription       Subscription[]
-  Municipality       Municipality?  @relation(name: "MunicipalityUser")
-  assignedProperties PropertyInfo[]
-  tasks              Task[]
-  sentMessages       Message[]      @relation("SentMessages")
-  receivedMessages   Message[]      @relation("ReceivedMessages")
-  signedDocuments    Document[]     @relation("SignatoryUser")
-  uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
-  writtenReviews     Review[]       @relation("ReviewAuthor")
-  receivedReviews    Review[]       @relation("ProfessionalReviews")
-  successStories     SuccessStory[] @relation("UserSuccessStories")
-  questions          Question[]     @relation("UserQuestions")
-  answers            Answer[]       @relation("UserAnswers")
+  id                 String          @id @default(uuid())
+  fullName           String
+  email              String          @unique
+  password           String
+  profilePic         String?
+  passwordChangedAt  DateTime?
+  isVerified         Boolean         @default(false)
+  role               UserRole        @default(USER)
+  isSubscribed       Boolean         @default(false)
+  planExpiration     DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  isDeleted          Boolean         @default(false)
+  lastActiveAt       DateTime?
+  stripeCustomerId   String?
   municipalityId     String?
-  staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  sellerId           String?
+  Notifications      Notification[]
+  Profile            Profile?
+  receivedReviews    Review[]        @relation("ProfessionalReviews")
+  writtenReviews     Review[]        @relation("ReviewAuthor")
+  answers            Answer[]        @relation("UserAnswers")
+  signedDocuments    Document[]      @relation("SignatoryUser")
+  meetings           Meeting[]
+  receivedMessages   Message[]       @relation("ReceivedMessages")
+  sentMessages       Message[]       @relation("SentMessages")
+  Municipality       Municipality?   @relation("MunicipalityUser")
+  uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
+  questions          Question[]      @relation("UserQuestions")
+  Seller             Seller?         @relation("SellerUser")
+  Subscription       Subscription[]
+  successStories     SuccessStory[]  @relation("UserSuccessStories")
+  staffMunicipality  Municipality?   @relation("StaffMunicipality", fields: [municipalityId], references: [id])
+  staffSeller        Seller?         @relation("StaffSeller", fields: [sellerId], references: [id])
+  assignedProperties PropertyInfo[]  @relation("PropertyInfoToUser")
+  tasks              Task[]          @relation("TaskToUser")
 
   @@map("users")
 }
@@ -75,8 +78,6 @@ model PlanFeaturedItem {
 model Plan {
   id                String             @id @default(uuid())
   planName          String             @unique
-  price             Float
-  planType          PlanType           @default(FREE)
   currency          String             @default("USD")
   interval          Interval           @default(month)
   intervalCount     Int                @default(1)
@@ -84,14 +85,16 @@ model Plan {
   priceId           String             @unique
   active            Boolean            @default(true)
   description       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  discountEndDate   DateTime?
+  discountStartDate DateTime?
   discountType      DiscountType?
   discountValue     Float?
   discountedPrice   Float?
-  discountStartDate DateTime?
-  discountEndDate   DateTime?
   hasDiscount       Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  planType          PlanType           @default(FREE)
+  price             Float
   featuredItems     PlanFeaturedItem[]
   subscriptions     Subscription[]
 
@@ -102,16 +105,6 @@ model Subscription {
   id                   String             @id @default(uuid())
   userId               String
   planId               String
-  stripeSubscriptionId String?            @unique
-  stripeCustomerId     String?
-  currentPeriodStart   DateTime
-  currentPeriodEnd     DateTime
-  status               SubscriptionStatus @default(INCOMPLETE)
-  cancelAtPeriodEnd    Boolean            @default(false)
-  lastPaymentDate      DateTime?
-  nextPaymentDate      DateTime?
-  renewalAttempts      Int                @default(0)
-  autoRenew            Boolean            @default(true)
   startDate            DateTime
   endDate              DateTime?
   amount               Float
@@ -119,6 +112,16 @@ model Subscription {
   paymentStatus        PaymentStatus      @default(PENDING)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+  autoRenew            Boolean            @default(true)
+  cancelAtPeriodEnd    Boolean            @default(false)
+  currentPeriodEnd     DateTime
+  currentPeriodStart   DateTime
+  lastPaymentDate      DateTime?
+  nextPaymentDate      DateTime?
+  renewalAttempts      Int                @default(0)
+  status               SubscriptionStatus @default(INCOMPLETE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?            @unique
   plan                 Plan               @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -140,17 +143,17 @@ model Profile {
   id               String    @id @default(uuid())
   userId           String    @unique
   birthDate        DateTime?
-  bio              String?
-  creativeFields   String[]
-  age              Int?
-  nationality      String?
-  country          String?
-  website          String?
-  instagram        String?
-  contactEmail     String?
-  membershipStatus String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  age              Int?
+  bio              String?
+  contactEmail     String?
+  country          String?
+  creativeFields   String[]
+  instagram        String?
+  membershipStatus String?
+  nationality      String?
+  website          String?
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -176,12 +179,12 @@ model Review {
   id             String   @id @default(uuid())
   rating         Int
   comment        String
-  reviewerId     String
-  reviewer       User     @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
-  professionalId String
-  professional   User     @relation("ProfessionalReviews", fields: [professionalId], references: [id], onDelete: Cascade)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  professionalId String
+  reviewerId     String
+  professional   User     @relation("ProfessionalReviews", fields: [professionalId], references: [id], onDelete: Cascade)
+  reviewer       User     @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
 }
 
 model Meeting {
@@ -216,68 +219,77 @@ model Subscriber {
   unsubscribedAt DateTime?
 }
 
-
-
-
-
 model Municipality {
   id         String         @id @default(uuid())
   userId     String         @unique
-  user       User           @relation(name: "MunicipalityUser", fields: [userId], references: [id], onDelete: Cascade)
   email      String
-
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
-
+  user       User           @relation("MunicipalityUser", fields: [userId], references: [id], onDelete: Cascade)
   properties PropertyInfo[]
-  staffs     User[]         @relation(name: "StaffMunicipality")
+  staffs     User[]         @relation("StaffMunicipality")
 
   @@map("municipalities")
 }
 
+model Seller {
+  id          String         @id @default(uuid())
+  userId      String         @unique
+  email       String
+  bio         String?
+  location    String?
+  phoneNumber String?
+  website     String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  properties  PropertyInfo[]
+  user        User           @relation("SellerUser", fields: [userId], references: [id], onDelete: Cascade)
+  staffs      User[]         @relation("StaffSeller")
+
+  @@map("sellers")
+}
+
 model PropertyInfo {
-  id               String       @id @default(cuid())
-  municipalityId   String
-  municipality     Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  propertyAddress  String
-  parcelId         Int
-  zone             String
-  propertyType     String
-  vacancyStatus    String
-  description      String?
-  askingPrice      Float
-  disposition      String
-  images           String[]
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  assignedStaff    User[]
-  tasks            Task[]
-  budgets          Budget[]
-  messages         Message[]
-  documents        Document[]
-  progressPhotos   ProgressPhoto[]
+  id              String          @id @default(cuid())
+  municipalityId  String?
+  propertyAddress String
+  parcelId        Int
+  zone            String
+  propertyType    String
+  vacancyStatus   String
+  description     String?
+  askingPrice     Float
+  disposition     String
+  images          String[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  sellerId        String?
+  budgets         Budget[]
+  documents       Document[]
+  messages        Message[]
+  progressPhotos  ProgressPhoto[]
+  municipality    Municipality?   @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  seller          Seller?         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+  assignedStaff   User[]          @relation("PropertyInfoToUser")
 
   @@index([municipalityId])
   @@map("property_infos")
 }
 
 model ProgressPhoto {
-  id               String       @id @default(uuid())
-  description      String?
-  url              String
-  
-  uploaderId       String
-  uploader         User         @relation("PhotoUploader", fields: [uploaderId], references: [id])
-  
-  propertyId       String
-  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id          String       @id @default(uuid())
+  description String?
+  url         String
+  uploaderId  String
+  propertyId  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  uploader    User         @relation("PhotoUploader", fields: [uploaderId], references: [id])
 
   @@map("progress_photos")
 }
-
 
 model Document {
   id                String       @id @default(uuid())
@@ -285,59 +297,46 @@ model Document {
   type              String
   fileUrl           String
   fileSize          String?
-  
   isSigningRequired Boolean      @default(false)
   signatoryId       String?
-  signatory         User?        @relation("SignatoryUser", fields: [signatoryId], references: [id])
   signedAt          DateTime?
-  
   propertyId        String
-  property          PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+  property          PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  signatory         User?        @relation("SignatoryUser", fields: [signatoryId], references: [id])
 
   @@map("documents")
 }
 
-
 model Message {
-  id               String       @id @default(uuid())
-  content          String
-  
-  senderId         String
-  sender           User         @relation(name: "SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  
-  receiverId       String?
-  receiver         User?        @relation(name: "ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  propertyId       String?
-  property         PropertyInfo? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  isRead           Boolean      @default(false)
-
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id         String        @id @default(uuid())
+  content    String
+  senderId   String
+  propertyId String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  isRead     Boolean       @default(false)
+  receiverId String?
+  property   PropertyInfo? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  receiver   User?         @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
 
-
 model Budget {
-  id               String       @id @default(uuid())
-  description      String
-  budgetedAmount   Float
-  completedAmount  Float        @default(0)
-  
-  propertyId       String
-  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id              String       @id @default(uuid())
+  description     String
+  budgetedAmount  Float
+  completedAmount Float        @default(0)
+  propertyId      String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  property        PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("budgets")
 }
-
 
 model Task {
   id          String       @id @default(uuid())
@@ -346,16 +345,61 @@ model Task {
   dueDate     DateTime
   file        String?
   status      TaskStatus   @default(TODO)
-  
   propertyId  String
-  property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
-  assignees   User[]
-
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  assignees   User[]       @relation("TaskToUser")
 
   @@map("tasks")
+}
+
+model SuccessStory {
+  id              String   @id @default(uuid())
+  title           String
+  propertyAddress String
+  price           Float?
+  description     String
+  beforeImages    String[]
+  afterImages     String[]
+  userId          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation("UserSuccessStories", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("success_stories")
+}
+
+model Question {
+  id        String   @id @default(uuid())
+  title     String
+  details   String
+  tags      String[]
+  category  String?
+  views     Int      @default(0)
+  upvotes   Int      @default(0)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  answers   Answer[]
+  author    User     @relation("UserQuestions", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  content    String
+  upvotes    Int      @default(0)
+  isAccepted Boolean  @default(false)
+  authorId   String
+  questionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  author     User     @relation("UserAnswers", fields: [authorId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
 }
 
 enum TaskStatus {
@@ -363,7 +407,6 @@ enum TaskStatus {
   IN_PROGRESS
   COMPLETED
 }
-
 
 enum SubscriptionStatus {
   ACTIVE
@@ -403,6 +446,9 @@ enum Status {
 }
 
 enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
   BUYER
   SELLER
   MUNICIPALITY
@@ -411,9 +457,6 @@ enum UserRole {
   INSPECTOR
   LENDER
   COMMUNITY_PARTNER
-  USER
-  ADMIN
-  SUPER_ADMIN
 }
 
 enum DiscountType {
@@ -445,58 +488,4 @@ enum Interval {
 enum PlanCategory {
   ORGANIZATION
   ARTIST
-}
-
-model SuccessStory {
-  id              String   @id @default(uuid())
-  title           String
-  propertyAddress String
-  price           Float?
-  description     String
-  beforeImages    String[] 
-  afterImages     String[] 
-  userId          String   
-  user            User     @relation("UserSuccessStories", fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("success_stories")
-}
-
-model Question {
-  id          String   @id @default(uuid())
-  title       String
-  details     String
-  tags        String[]
-  category    String?
-  views       Int      @default(0)
-  upvotes     Int      @default(0)
-
-  authorId    String
-  author      User     @relation("UserQuestions", fields: [authorId], references: [id], onDelete: Cascade)
-
-  answers     Answer[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("questions")
-}
-
-model Answer {
-  id          String   @id @default(uuid())
-  content     String
-  upvotes     Int      @default(0)
-  isAccepted  Boolean  @default(false)
-
-  authorId    String
-  author      User     @relation("UserAnswers", fields: [authorId], references: [id], onDelete: Cascade)
-
-  questionId  String
-  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("answers")
 }

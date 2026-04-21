@@ -5,13 +5,17 @@ import QueryBuilder from "../../builder/QueryBuilder";
 import { IPropertyInfo } from "./propertyInfo.interface";
 
 const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) => {
-  // Find municipality by userId
+  // Find municipality or seller by userId
   const municipality = await prisma.municipality.findUnique({
     where: { userId },
   });
 
-  if (!municipality) {
-    throw new ApiError(status.NOT_FOUND, "Municipality profile not found for this user!");
+  const seller = await prisma.seller.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality && !seller) {
+    throw new ApiError(status.NOT_FOUND, "Owner profile (Municipality or Seller) not found for this user!");
   }
 
   const { assignedStaffIds, tasks, budgets, budgetSummary, documents, messages, progressPhotos, ...propertyData } = payload;
@@ -26,12 +30,11 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
     }
   }
 
-
-
   const result = await prisma.propertyInfo.create({
     data: {
       ...propertyData,
-      municipalityId: municipality.id,
+      municipalityId: municipality?.id,
+      sellerId: seller?.id,
       // Keep individual assignment for direct access tracking
       assignedStaff: assignedStaffIds ? {
         connect: assignedStaffIds.map(id => ({ id }))
@@ -63,6 +66,7 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
     .fields()
     .include({
       municipality: true,
+      seller: true,
       assignedStaff: {
         select: {
           id: true,
@@ -86,6 +90,7 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
     where: { id },
     include: {
       municipality: true,
+      seller: true,
       assignedStaff: {
         select: {
           id: true,
@@ -219,6 +224,7 @@ const getMyPropertiesFromDB = async (userId: string) => {
     where: { id: userId },
     include: {
       Municipality: true,
+      Seller: true,
     },
   });
 
@@ -244,12 +250,34 @@ const getMyPropertiesFromDB = async (userId: string) => {
     });
   }
 
+  // If the user is a seller
+  if (user.role === "SELLER" && user.Seller) {
+    return await prisma.propertyInfo.findMany({
+      where: { sellerId: user.Seller.id },
+      include: {
+        assignedStaff: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePic: true,
+            role: true,
+          },
+        },
+      },
+    });
+  }
+
   // If the user is a staff member (assigned to properties)
   return await prisma.propertyInfo.findMany({
     where: {
       assignedStaff: {
         some: { id: userId },
       },
+      OR: [
+        { municipality: { isNot: null } },
+        { seller: { isNot: null } }
+      ]
     },
     include: {
       assignedStaff: {
@@ -262,6 +290,7 @@ const getMyPropertiesFromDB = async (userId: string) => {
         },
       },
       municipality: true,
+      seller: true,
     },
   });
 };
@@ -351,9 +380,16 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
     where: { userId },
   });
 
-  if (!municipality) {
-    throw new ApiError(status.NOT_FOUND, "Municipality profile not found for this user!");
+  const seller = await prisma.seller.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality && !seller) {
+    throw new ApiError(status.NOT_FOUND, "Owner profile (Municipality or Seller) not found for this user!");
   }
+
+  const ownerId = municipality?.id || seller?.id;
+  const isMunicipality = !!municipality;
 
   const csvText = fileBuffer.toString("utf-8");
   const lines = csvText.split(/\r?\n/).filter((line) => line.trim() !== "");
@@ -374,7 +410,8 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
     }
     
     properties.push({
-      municipalityId: municipality.id,
+      municipalityId: isMunicipality ? ownerId : null,
+      sellerId: !isMunicipality ? ownerId : null,
       propertyAddress: obj.propertyAddress || obj.address || "No Address Provided",
       parcelId: obj.parcelId || "N/A",
       propertyType: obj.propertyType || "Commercial",
@@ -396,6 +433,52 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
   return result;
 };
 
+const inviteProfessionalToPropertyInDB = async (propertyId: string, payload: { email: string; role: any; message?: string }) => {
+  const normalizedEmail = payload.email.toLowerCase().trim();
+
+  // 1. Check if user exists
+  let user = await prisma.user.findUnique({
+    where: { email: normalizedEmail }
+  });
+
+  if (!user) {
+    // 2. Create user (invited state)
+    // Note: In production, we should use a proper invitation flow with email
+    user = await prisma.user.create({
+      data: {
+        fullName: normalizedEmail.split('@')[0],
+        email: normalizedEmail,
+        password: "INVITED_USER_TEMP_PWD", // Placeholder
+        role: payload.role,
+        isVerified: false,
+      },
+    });
+  }
+
+  // 3. Assign to property
+  const result = await prisma.propertyInfo.update({
+    where: { id: propertyId },
+    data: {
+      assignedStaff: {
+        connect: { id: user.id }
+      }
+    },
+    include: {
+      assignedStaff: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+        }
+      }
+    }
+  });
+
+  return result;
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -406,4 +489,5 @@ export const PropertyInfoService = {
   assignStaffToPropertyInDB,
   removeStaffFromPropertyInDB,
   bulkUploadPropertyInfosFromCSV,
+  inviteProfessionalToPropertyInDB,
 };

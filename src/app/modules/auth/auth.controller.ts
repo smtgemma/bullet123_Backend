@@ -188,13 +188,18 @@ const createStaffAccount = catchAsync(async (req, res) => {
     where: { userId }
   });
 
-  if (!municipality) {
-    throw new AppError(status.NOT_FOUND, "Municipality profile not found for this user!");
+  const seller = await prisma.seller.findUnique({
+    where: { userId }
+  });
+
+  if (!municipality && !seller) {
+    throw new AppError(status.NOT_FOUND, "Municipality or Seller profile not found for this user!");
   }
 
   const result = await AuthService.createStaffAccount({
     ...req.body,
-    municipalityId: municipality.id
+    municipalityId: municipality?.id,
+    sellerId: seller?.id
   });
 
   sendResponse(res, {
