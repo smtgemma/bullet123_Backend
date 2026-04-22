@@ -650,6 +650,16 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
       isVerified: false,
       municipalityId: payload.municipalityId,
     },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      isVerified: true,
+      municipalityId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   // Generate Setup Token (expires in 24h)
@@ -664,7 +674,7 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
 
   // Send Invitation Email
   const setupUrl = `${config.url.frontend}/setup-password?token=${setupToken}&email=${normalizedEmail}`;
-  
+
   const emailContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
       <h2 style="color: #4CAF50; text-align: center;">Welcome to Bullet Backend!</h2>
@@ -683,7 +693,7 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
 
   await sendEmail(normalizedEmail, "🔐 Invitation to Join - Set Up Your Password", emailContent);
 
-  return { message: "Invitation sent successfully!" };
+  return { message: "Invitation sent successfully!", data: result };
 };
 
 // ── Setup Password (Activate Account) ─────────────────────────────────────

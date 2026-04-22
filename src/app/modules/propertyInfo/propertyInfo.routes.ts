@@ -34,6 +34,12 @@ router.get(
 );
 
 router.get(
+  "/stats",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.getPropertyStats
+);
+
+router.get(
   "/my-properties",
   auth(
     UserRole.MUNICIPALITY,

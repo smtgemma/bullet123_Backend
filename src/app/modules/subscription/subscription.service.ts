@@ -35,7 +35,7 @@ const getEffectivePrice = (plan: any): number => {
 
 const createSubscription = async (userId: string, planId: string) => {
 
-  
+
   return await prisma.$transaction(async (tx) => {
 
     const user = await tx.user.findUnique({ where: { id: userId } });
@@ -48,17 +48,17 @@ const createSubscription = async (userId: string, planId: string) => {
     if (!plan) throw new AppError(status.NOT_FOUND, "Plan not found");
 
     const pendingSubscriptions = await tx.subscription.findMany({
-      where: { 
+      where: {
         userId,
         OR: [
-          { status: "INCOMPLETE"},
+          { status: "INCOMPLETE" },
           { paymentStatus: "PENDING" }
         ]
       },
     });
 
     if (plan.planType === "FREE") {
-      
+
 
       const subscription = await tx.subscription.create({
         data: {
@@ -86,7 +86,7 @@ const createSubscription = async (userId: string, planId: string) => {
         where: { id: user.id },
         data: {
           isSubscribed: true,
-        
+
         },
       });
 
@@ -125,33 +125,33 @@ const createSubscription = async (userId: string, planId: string) => {
 
     const finalPrice = getEffectivePrice(plan);
 
-const stripeSubscription: any = await stripe.subscriptions.create({
-  customer: stripeCustomerId,
-  items: [
-    {
-      price_data: {
-        currency: plan.currency,
-        unit_amount: Math.round(finalPrice * 100),
-        recurring: { interval: plan.interval as any },
-        product: plan.productId,
+    const stripeSubscription: any = await stripe.subscriptions.create({
+      customer: stripeCustomerId,
+      items: [
+        {
+          price_data: {
+            currency: plan.currency,
+            unit_amount: Math.round(finalPrice * 100),
+            recurring: { interval: plan.interval as any },
+            product: plan.productId,
+          },
+        },
+      ],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription',
       },
-    },
-  ],
-  payment_behavior: 'default_incomplete',
-  payment_settings: {
-    payment_method_types: ['card'],
-    save_default_payment_method: 'on_subscription',
-  },
-  expand: ['latest_invoice.payment_intent'],
-  metadata: { userId: user.id, planId },
-});
+      expand: ['latest_invoice.payment_intent'],
+      metadata: { userId: user.id, planId },
+    });
 
     const latestInvoice = stripeSubscription.latest_invoice;
     const paymentIntent = latestInvoice?.payment_intent;
 
     const currentPeriodStart = new Date((stripeSubscription.current_period_start || stripeSubscription.currentPeriodStart || Date.now() / 1000) * 1000);
     const currentPeriodEnd = new Date((stripeSubscription.current_period_end || stripeSubscription.currentPeriodEnd || (Date.now() / 1000 + 2592000)) * 1000);
-    
+
 
     let endDate: Date | null = null;
     if (plan.interval === "month") {
@@ -162,7 +162,7 @@ const stripeSubscription: any = await stripe.subscriptions.create({
       endDate = null;
     }
 
-  
+
     const dbSubscription = await tx.subscription.create({
       data: {
         userId: user.id,
@@ -225,8 +225,8 @@ const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent)
       if (subscription) {
         await tx.subscription.update({
           where: { id: subscription.id },
-          data: { 
-            paymentStatus: "COMPLETED", 
+          data: {
+            paymentStatus: "COMPLETED",
             lastPaymentDate: new Date(),
             status: "ACTIVE"
           },
@@ -257,8 +257,8 @@ const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent)
 
 const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
 
-  const subscriptionId = typeof (invoice as any).subscription === 'string' 
-    ? (invoice as any).subscription 
+  const subscriptionId = typeof (invoice as any).subscription === 'string'
+    ? (invoice as any).subscription
     : (invoice as any).subscription?.id;
 
   if (!subscriptionId) {
@@ -280,7 +280,7 @@ const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
     await prisma.$transaction(async (tx) => {
       const currentDate = new Date();
       let nextPeriodEnd = new Date(currentDate);
-      
+
       if (subscription.plan.interval === "month") {
         nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + (subscription.plan.intervalCount || 1));
       } else if (subscription.plan.interval === "year") {
@@ -313,7 +313,7 @@ const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
 
         await tx.user.update({
           where: { id: subscription.userId },
-          data: { 
+          data: {
             isSubscribed: true,
           },
         });
@@ -336,9 +336,9 @@ const handleInvoicePaymentSucceeded = async (invoice: Stripe.Invoice) => {
 };
 
 const handleInvoicePaymentFailed = async (invoice: Stripe.Invoice) => {
- 
-  const subscriptionId = typeof (invoice as any).subscription === 'string' 
-    ? (invoice as any).subscription 
+
+  const subscriptionId = typeof (invoice as any).subscription === 'string'
+    ? (invoice as any).subscription
     : (invoice as any).subscription?.id;
 
   if (!subscriptionId) return;
@@ -362,7 +362,7 @@ const handleInvoicePaymentFailed = async (invoice: Stripe.Invoice) => {
       await prisma.notification.create({
         data: {
           userId: subscription.userId,
-        message: 'Your subscription renewal payment failed. Please update your payment method to avoid service interruption.',
+          message: 'Your subscription renewal payment failed. Please update your payment method to avoid service interruption.',
           isRead: false,
         },
       });
@@ -386,11 +386,11 @@ const handleCustomerSubscriptionDeleted = async (subscription: Stripe.Subscripti
         status: "CANCELED",
         paymentStatus: "CANCELED",
         cancelAtPeriodEnd: false,
-        autoRenew: false, 
+        autoRenew: false,
       },
     });
 
-    
+
     if (dbSubscription) {
       await prisma.user.update({
         where: { id: dbSubscription.userId },
@@ -399,7 +399,7 @@ const handleCustomerSubscriptionDeleted = async (subscription: Stripe.Subscripti
         },
       });
 
-  
+
       await prisma.notification.create({
         data: {
           userId: dbSubscription.userId,
@@ -433,7 +433,7 @@ const cancelSubscription = async (subscriptionId: string, userId?: string) => {
   if (subscription.stripeSubscriptionId === "FREE_PLAN") {
     const updated = await prisma.subscription.update({
       where: { id: subscriptionId },
-      data: { 
+      data: {
         status: "CANCELED",
         cancelAtPeriodEnd: false,
       },
@@ -463,8 +463,8 @@ const cancelSubscription = async (subscriptionId: string, userId?: string) => {
     where: { id: subscriptionId },
     data: { cancelAtPeriodEnd: true },
   });
-  const user = await prisma.user.findUnique({ 
-    where: { id: subscription.userId } 
+  const user = await prisma.user.findUnique({
+    where: { id: subscription.userId }
   });
 
   if (user) {
@@ -504,9 +504,9 @@ const reactivateSubscription = async (subscriptionId: string, userId?: string) =
 
   const updated = await prisma.subscription.update({
     where: { id: subscriptionId },
-    data: { 
+    data: {
       cancelAtPeriodEnd: false,
-      autoRenew: true, 
+      autoRenew: true,
     },
   });
 
@@ -521,9 +521,9 @@ const getMySubscription = async (userId: string) => {
   if (!user) throw new AppError(status.NOT_FOUND, "User not found");
 
   const result = await prisma.subscription.findMany({
-    where: { 
+    where: {
       userId,
-      status: { in: ["ACTIVE", "TRIALING", "PAST_DUE"] } 
+      status: { in: ["ACTIVE", "TRIALING", "PAST_DUE"] }
     },
     include: {
       user: {
@@ -551,7 +551,7 @@ const getMySubscription = async (userId: string) => {
 
 
 const getAllSubscriptions = async (query: Record<string, any>) => {
- 
+
   const queryBuilder = new QueryBuilder(prisma.subscription, query);
 
   const subscriptions = await queryBuilder
@@ -559,16 +559,16 @@ const getAllSubscriptions = async (query: Record<string, any>) => {
     .paginate()
     .fields()
     .include({
-     user: {
-  select: {
-    id: true,
-    fullName: true,
-    email: true,
-    profilePic: true,
-    role: true,
-    isSubscribed: true,
-  },
-},
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+          role: true,
+          isSubscribed: true,
+        },
+      },
       plan: {
         include: {
           featuredItems: { include: { featuredItem: true } },
@@ -642,7 +642,7 @@ const deleteSubscription = async (subscriptionId: string) => {
       await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
     } catch (error) {
       console.error("Error cancelling Stripe subscription:", error);
-   
+
     }
   }
 
@@ -659,40 +659,40 @@ const deleteSubscription = async (subscriptionId: string) => {
 
 const HandleStripeWebhook = async (event: Stripe.Event) => {
   try {
-    console.log(`📥 Received webhook: ${event.type}`);
+    console.log(` Received webhook: ${event.type}`);
 
     switch (event.type) {
       case "payment_intent.succeeded":
         await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
         break;
-      
+
       case "invoice.payment_succeeded":
         await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
         break;
-      
+
       case "invoice.payment_failed":
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
-      
+
       case "customer.subscription.deleted":
         await handleCustomerSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
-      
+
       case "customer.subscription.updated":
         const subscription = event.data.object as Stripe.Subscription;
         await prisma.subscription.updateMany({
           where: { stripeSubscriptionId: subscription.id },
-          data: { 
+          data: {
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             status: subscription.status as SubscriptionStatus,
           },
         });
         break;
-      
+
       default:
         console.log(`Unhandled event: ${event.type}`);
     }
-    
+
     return { received: true };
   } catch (error: any) {
     console.error(" Webhook error:", error);
@@ -773,9 +773,9 @@ const confirmPayment = async (userId: string, paymentMethodId: string) => {
   let pdfUrl: string | null = null;
 
   if (latestInvoice) {
-    invoiceUrl = latestInvoice.hosted_invoice_url ?? null; 
-    pdfUrl = latestInvoice.invoice_pdf ?? null;            
-    amountPaid = latestInvoice.amount_due / 100;          
+    invoiceUrl = latestInvoice.hosted_invoice_url ?? null;
+    pdfUrl = latestInvoice.invoice_pdf ?? null;
+    amountPaid = latestInvoice.amount_due / 100;
     currency = latestInvoice.currency?.toUpperCase() ?? null;
 
     if (latestInvoice.status === "open") {
@@ -809,21 +809,21 @@ const confirmPayment = async (userId: string, paymentMethodId: string) => {
 
 
   return {
-    invoiceUrl,   
-    pdfUrl,       
-    amountPaid,   
-    currency,    
-    planName: subscription.plan.planName,       
-    planType: subscription.plan.planType,      
-    subscriptionId: subscription.id,            
-    currentPeriodEnd: subscription.currentPeriodEnd, 
+    invoiceUrl,
+    pdfUrl,
+    amountPaid,
+    currency,
+    planName: subscription.plan.planName,
+    planType: subscription.plan.planType,
+    subscriptionId: subscription.id,
+    currentPeriodEnd: subscription.currentPeriodEnd,
   };
 };
 
 
 export const startSubscriptionCronJobs = () => {
   cron.schedule("0 9 * * *", async () => {
-   
+
     try {
       const sevenDaysLater = new Date();
       sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
@@ -908,8 +908,8 @@ export const startSubscriptionCronJobs = () => {
         );
 
         const totalSlots = artworkSlotItem?.limit || 0;
-  
-  
+
+
         if (totalSlots === 0) continue;
 
 

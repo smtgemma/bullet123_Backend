@@ -396,6 +396,37 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
   return result;
 };
 
+const getPropertyStatsFromDB = async (userId: string) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const stats = await prisma.propertyInfo.groupBy({
+    by: ["vacancyStatus"],
+    where: { municipalityId: municipality.id },
+    _count: { id: true },
+    _sum: { askingPrice: true },
+  });
+
+  const totalProperties = await prisma.propertyInfo.count({
+    where: { municipalityId: municipality.id },
+  });
+
+  return {
+    totalProperties,
+    vacant: stats.find((s) => s.vacancyStatus === "Vacant")?._count.id || 0,
+    underContract: stats.find((s) => s.vacancyStatus === "Under Contract")?._count.id || 0,
+    closed: {
+      count: stats.find((s) => s.vacancyStatus === "Closed")?._count.id || 0,
+      totalValue: stats.find((s) => s.vacancyStatus === "Closed")?._sum.askingPrice || 0,
+    },
+  };
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -406,4 +437,5 @@ export const PropertyInfoService = {
   assignStaffToPropertyInDB,
   removeStaffFromPropertyInDB,
   bulkUploadPropertyInfosFromCSV,
+  getPropertyStatsFromDB,
 };

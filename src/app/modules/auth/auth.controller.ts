@@ -180,10 +180,9 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
-// ── Create Staff Account ───────────────────────────────────────────────────
 const createStaffAccount = catchAsync(async (req, res) => {
   const userId = req.user?.id as string;
-  
+
   const municipality = await prisma.municipality.findUnique({
     where: { userId }
   });
@@ -200,10 +199,10 @@ const createStaffAccount = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     message: result.message,
+    data: result.data
   });
 });
 
-// ── Setup Password ─────────────────────────────────────────────────────────
 const setupPassword = catchAsync(async (req, res) => {
   const result = await AuthService.setupPassword(req.body);
 

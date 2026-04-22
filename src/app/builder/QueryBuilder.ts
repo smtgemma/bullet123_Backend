@@ -24,19 +24,55 @@ class QueryBuilder {
 
 
   filter() {
-    const queryObj = { ...this.query };
-    const excludeFields = ["searchTerm", "sort", "limit", "page", "fields"];
+    const queryObj = JSON.parse(JSON.stringify(this.query));
+    const excludeFields = [
+      "searchTerm",
+      "sort",
+      "limit",
+      "page",
+      "fields",
+      "startDate",
+      "endDate",
+      "location",
+      "dateField",
+      "locationFields",
+    ];
     excludeFields.forEach((field) => delete queryObj[field]);
 
     const formattedFilters: Record<string, any> = {};
     for (const [key, value] of Object.entries(queryObj)) {
-      if (typeof value === "string" && value.includes("[")) {
+      if (typeof value === "string" && key.includes("[")) {
         const [field, operator] = key.split("[");
-        const op = operator.slice(0, -1); 
-        formattedFilters[field] = { [`${op}`]: parseFloat(value as string) };
+        const op = operator.slice(0, -1);
+
+        const numericValue = parseFloat(value);
+        formattedFilters[field] = {
+          ...formattedFilters[field],
+          [`${op}`]: isNaN(numericValue) ? value : numericValue,
+        };
       } else {
         formattedFilters[key] = value;
       }
+    }
+
+    // Handle explicit date range if provided in query
+    if (this.query.startDate || this.query.endDate) {
+      const field = (this.query.dateField as string) || "createdAt";
+      formattedFilters[field] = {
+        ...(this.query.startDate ? { gte: new Date(this.query.startDate as string) } : {}),
+        ...(this.query.endDate ? { lte: new Date(this.query.endDate as string) } : {}),
+      };
+    }
+
+    // Handle location search if provided
+    if (this.query.location) {
+      const fieldsToSearch = (this.query.locationFields as string)?.split(",") || ["propertyAddress", "zone"];
+      this.prismaQuery.where = {
+        ...this.prismaQuery.where,
+        OR: fieldsToSearch.map((field) => ({
+          [field]: { contains: this.query.location as string, mode: "insensitive" },
+        })),
+      };
     }
 
     this.prismaQuery.where = {
@@ -47,14 +83,11 @@ class QueryBuilder {
     return this;
   }
 
-
   rawFilter(filters: Record<string, any>) {
-   
     this.prismaQuery.where = {
       ...this.prismaQuery.where,
       ...filters,
     };
-    console.log(this.prismaQuery.where);
     return this;
   }
 

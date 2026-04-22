@@ -102,6 +102,17 @@ const removeStaff = catchAsync(async (req, res) => {
   });
 });
 
+const getPropertyStats = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await PropertyInfoService.getPropertyStatsFromDB(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Property stats retrieved successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -111,4 +122,5 @@ export const PropertyInfoController = {
   getMyProperties,
   assignStaff,
   removeStaff,
+  getPropertyStats,
 };
