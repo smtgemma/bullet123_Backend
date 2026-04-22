@@ -6,7 +6,7 @@ import { get } from "http";
 
 const createSubscription = catchAsync(async (req, res) => {
   const userId = req?.user?.id as string;
- 
+
   const { planId } = req.body;
   console.log("createSubscription - planId:", req.body);
   const result = await SubscriptionServices.createSubscription(userId, planId);
@@ -135,7 +135,7 @@ const confirmPayment = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     message: "Payment confirmed successfully",
-    data:result,
+    data: result,
   });
 });
 export const SubscriptionController = {
@@ -146,7 +146,7 @@ export const SubscriptionController = {
   getSingleSubscription,
   updateSubscription,
   deleteSubscription,
- cancelSubscription,
- reactivateSubscription,
- confirmPayment
+  cancelSubscription,
+  reactivateSubscription,
+  confirmPayment
 };

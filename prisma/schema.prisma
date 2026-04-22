@@ -147,13 +147,11 @@ model Profile {
   updatedAt        DateTime  @updatedAt
   age              Int?
   bio              String?
-  contactEmail     String?
-  country          String?
-  creativeFields   String[]
-  instagram        String?
-  membershipStatus String?
-  nationality      String?
+  location         String?  
   website          String?
+  phone            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

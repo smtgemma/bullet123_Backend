@@ -13,7 +13,7 @@ import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 
 const app: Application = express();
 
-app.use(cors({ origin: ["http://localhost:3000","http://localhost:3001","http://206.162.244.134:3002","http://206.162.244.134:3001"], credentials: true }));
+app.use(cors({ origin: ["http://localhost:4044", "http://localhost:4000", "http://localhost:4041", "http://localhost:4042", "http://localhost:4043"], credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
