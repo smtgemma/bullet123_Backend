@@ -213,8 +213,6 @@ model Subscriber {
 
 
 
-
-
 model Municipality {
   id         String         @id @default(uuid())
   userId     String         @unique

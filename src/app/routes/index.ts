@@ -17,6 +17,7 @@ import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.rout
 import { reviewRoute } from "../modules/review/review.route";
 import { SuccessStoryRoutes } from "../modules/successStory/successStory.route";
 import { QaRoutes } from "../modules/qa/qa.route";
+import { imagesHostRoute } from "../utils/imagehost";
 
 const router = Router();
 
@@ -95,6 +96,10 @@ const moduleRoutes = [
     path: "/qa",
     route: QaRoutes,
   },
+  {
+    path:"/uploads",
+    route:imagesHostRoute
+  }
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
