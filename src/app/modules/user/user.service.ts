@@ -159,30 +159,22 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
 const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) => {
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
-    include: { Profile: true },
   });
 
   if (!isUserExist) {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-
   const userUpdateData: any = {};
   if (payload?.fullName) userUpdateData.fullName = payload.fullName;
   if (payload?.profilePic) userUpdateData.profilePic = payload.profilePic;
 
-
   const profileData: any = {};
   if (payload?.birthDate) profileData.birthDate = new Date(payload.birthDate);
   if (payload?.bio) profileData.bio = payload.bio;
-  if (payload?.creativeFields) profileData.creativeFields = payload.creativeFields;
-  if (payload?.age) profileData.age = payload.age;
-  if (payload?.nationality) profileData.nationality = payload.nationality;
-  if (payload?.country) profileData.country = payload.country;
+  if (payload?.location) profileData.location = payload.location;
+  if (payload?.phone) profileData.phone = payload.phone;
   if (payload?.website) profileData.website = payload.website;
-  if (payload?.instagram) profileData.instagram = payload.instagram;
-  if (payload?.contactEmail) profileData.contactEmail = payload.contactEmail;
-  if (payload?.membershipStatus) profileData.membershipStatus = payload.membershipStatus;
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -204,13 +196,21 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
       isVerified: true,
       createdAt: true,
       updatedAt: true,
-      Profile: true,
+      Profile: {
+        select: {
+          id: true,
+          bio: true,
+          location: true,  
+          phone: true,      
+          website: true,
+          birthDate: true,
+        },
+      },
     },
   });
 
   return updatedUser;
 };
-
 
 const getSingleUserByIdFromDB = async (userId: string) => {
   const user = await prisma.user.findUnique({
