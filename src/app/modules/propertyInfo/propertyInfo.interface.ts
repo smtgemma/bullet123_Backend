@@ -1,10 +1,12 @@
+import { PropertyStatus } from "@prisma/client";
+
 export interface IPropertyInfo {
   municipalityId: string;
   propertyAddress: string;
   parcelId: number;
   zone: string;
   propertyType: string;
-  vacancyStatus: string;
+  vacancyStatus: PropertyStatus;
   description?: string;
   askingPrice: number;
   disposition: string;

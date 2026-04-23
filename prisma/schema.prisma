@@ -236,7 +236,7 @@ model PropertyInfo {
   parcelId         Int
   zone             String
   propertyType     String
-  vacancyStatus    String
+  vacancyStatus    PropertyStatus @default(VACANT)
   description      String?
   askingPrice      Float
   disposition      String
@@ -494,4 +494,12 @@ model Answer {
   updatedAt   DateTime @updatedAt
 
   @@map("answers")
+}
+
+enum PropertyStatus {
+  VACANT
+  UNDER_CONTRACT
+  CLOSED
+  COMPLETED
+  CANCELLED
 }

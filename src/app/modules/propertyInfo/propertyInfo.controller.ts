@@ -196,6 +196,65 @@ const downloadEconomicImpactPDF = catchAsync(async (req, res) => {
   doc.end();
 });
 
+const downloadPropertyReportPDF = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const data: any = await PropertyInfoService.getPropertyReportDataFromDB(id as string);
+
+  const doc = new PDFDocument({ margin: 50 });
+  const filename = `Property_Report_${id}_${Date.now()}.pdf`;
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+
+  doc.pipe(res);
+
+  // Title
+  doc.fontSize(22).text("Property Completion Report", { align: "center" });
+  doc.fontSize(14).text("Official Evidence Document", { align: "center" });
+  doc.moveDown(2);
+
+  // 1. Property Information
+  doc.fontSize(16).text("1. Property Information", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Property Address: ${data.property.address}`);
+  doc.text(`Municipality: ${data.property.municipality}`);
+  doc.moveDown();
+
+  // 2. Progress & Completion
+  doc.fontSize(16).text("2. Progress & Completion", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Completion: ${data.financials.completionPercentage}%`);
+  doc.text(`Days Active: ${data.property.daysActive} days`);
+  doc.text(`Status: ${data.property.status}`);
+  doc.moveDown();
+
+  // 3. Financial Summary
+  doc.fontSize(16).text("3. Financial Summary", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Total Budget: $${data.financials.totalBudget.toLocaleString()}`);
+  doc.text(`Paid Amount: $${data.financials.totalPaid.toLocaleString()}`);
+  doc.text(`Remaining: $${data.financials.remaining.toLocaleString()}`);
+  doc.moveDown();
+
+  // 4. Contractors & Team
+  doc.fontSize(16).text("4. Contractors & Team", { underline: true });
+  doc.moveDown(0.5);
+  data.team.forEach((member: any) => {
+    doc.fontSize(12).text(`[ ] ${member.fullName} - ${member.role}`);
+  });
+  doc.moveDown();
+
+  // 5. Dates & Metadata
+  doc.fontSize(16).text("5. Dates & Metadata", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Start Date: ${new Date(data.property.startDate).toLocaleDateString()}`);
+  if (data.property.completionDate) {
+    doc.text(`Completion Date: ${new Date(data.property.completionDate).toLocaleDateString()}`);
+  }
+  
+  doc.end();
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -211,4 +270,5 @@ export const PropertyInfoController = {
   getPropertyDashboardData,
   getEconomicImpact,
   downloadEconomicImpactPDF,
+  downloadPropertyReportPDF,
 };

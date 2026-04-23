@@ -1,3 +1,4 @@
+import { PropertyStatus } from "@prisma/client";
 import status from "http-status";
 import prisma from "../../utils/prisma";
 import ApiError from "../../errors/AppError";
@@ -56,6 +57,11 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo &
 };
 
 const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
+  // Normalize vacancyStatus to uppercase if provided in query
+  if (query.vacancyStatus && typeof query.vacancyStatus === "string") {
+    query.vacancyStatus = query.vacancyStatus.toUpperCase();
+  }
+
   const queryBuilder = new QueryBuilder(prisma.propertyInfo, query)
     .search(["propertyAddress", "zone", "propertyType", "vacancyStatus"])
     .filter()
@@ -160,7 +166,8 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
   const overallCompletion = totalBudget > 0 ? (totalCompleted / totalBudget) * 100 : 0;
 
   const createdAt = new Date(result.createdAt);
-  const stopDate = result.closedAt ? new Date(result.closedAt) : new Date();
+  const terminalStatuses: PropertyStatus[] = [PropertyStatus.CLOSED, PropertyStatus.COMPLETED, PropertyStatus.CANCELLED];
+  const stopDate = (result.closedAt && terminalStatuses.includes(result.vacancyStatus)) ? new Date(result.closedAt) : new Date();
   const diffTime = Math.abs(stopDate.getTime() - createdAt.getTime());
   const daysActive = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -189,7 +196,7 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
   const { assignedStaffIds, tasks, budgets, budgetSummary, documents, messages, progressPhotos, ...updateData } = payload;
 
   // Handle closedAt timestamp based on status
-  const terminalStatuses = ["Closed", "Completed", "Cancelled"];
+  const terminalStatuses: PropertyStatus[] = [PropertyStatus.CLOSED, PropertyStatus.COMPLETED, PropertyStatus.CANCELLED];
   if (payload.vacancyStatus && terminalStatuses.includes(payload.vacancyStatus)) {
     (updateData as any).closedAt = new Date();
   } else if (payload.vacancyStatus && !terminalStatuses.includes(payload.vacancyStatus)) {
@@ -394,9 +401,9 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
     properties.push({
       municipalityId: municipality.id,
       propertyAddress: obj.propertyAddress || obj.address || "No Address Provided",
-      parcelId: obj.parcelId || "N/A",
+      parcelId: parseInt(obj.parcelId) || 0,
       propertyType: obj.propertyType || "Commercial",
-      vacancyStatus: obj.vacancyStatus || "Vacant",
+      vacancyStatus: (obj.vacancyStatus as PropertyStatus) || PropertyStatus.VACANT,
       zone: obj.zone || "Default Zone",
       disposition: obj.disposition || "Default Disposition",
       description: obj.description || "",
@@ -446,10 +453,10 @@ const getPropertyStatsFromDB = async (userId: string) => {
 
     const [total, vacant, underContract, closed] = await Promise.all([
       prisma.propertyInfo.count({ where }),
-      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: "Vacant" } }),
-      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: "Under Contract" } }),
+      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: PropertyStatus.VACANT } }),
+      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: PropertyStatus.UNDER_CONTRACT } }),
       prisma.propertyInfo.aggregate({
-        where: { ...where, vacancyStatus: "Closed" },
+        where: { ...where, vacancyStatus: PropertyStatus.CLOSED },
         _count: { id: true },
         _sum: { askingPrice: true },
       }),
@@ -646,18 +653,19 @@ const getEconomicImpactFromDB = async (userId: string) => {
   });
 
   const revenueGained = properties
-    .filter((p) => p.vacancyStatus === "Closed")
+    .filter((p) => p.vacancyStatus === PropertyStatus.CLOSED || p.vacancyStatus === PropertyStatus.COMPLETED)
     .reduce((sum, p) => sum + p.askingPrice, 0);
 
-  const vacantProperties = properties.filter((p) => p.vacancyStatus === "Vacant");
+  const vacantProperties = properties.filter((p) => p.vacancyStatus === PropertyStatus.VACANT);
   const estimatedLoss = vacantProperties.reduce((sum, p) => sum + p.askingPrice * 0.1, 0);
 
+  const taxExemptStatuses: PropertyStatus[] = [PropertyStatus.VACANT, PropertyStatus.CANCELLED];
   const taxRevenue = properties
-    .filter((p) => p.vacancyStatus !== "Vacant")
+    .filter((p) => !taxExemptStatuses.includes(p.vacancyStatus))
     .reduce((sum, p) => sum + p.askingPrice * 0.015, 0);
 
   const projectedRevenue = properties
-    .filter((p) => p.vacancyStatus === "Under Contract")
+    .filter((p) => p.vacancyStatus === PropertyStatus.UNDER_CONTRACT)
     .reduce((sum, p) => sum + p.askingPrice, 0);
 
   return {
@@ -670,10 +678,61 @@ const getEconomicImpactFromDB = async (userId: string) => {
       taxRevenueGenerated: taxRevenue,
       projectedRevenue,
       annualLossVacant: estimatedLoss,
-      totalCompletedProperties: properties.filter((p) => p.vacancyStatus === "Closed").length,
-      totalPropertiesInPipeline: properties.filter((p) => p.vacancyStatus === "Under Contract").length,
+      totalCompletedProperties: properties.filter((p) => p.vacancyStatus === PropertyStatus.CLOSED || p.vacancyStatus === PropertyStatus.COMPLETED).length,
+      totalPropertiesInPipeline: properties.filter((p) => p.vacancyStatus === PropertyStatus.UNDER_CONTRACT).length,
       totalVacantProperties: vacantProperties.length,
     }
+  };
+};
+
+const getPropertyReportDataFromDB = async (id: string) => {
+  const result = await prisma.propertyInfo.findUnique({
+    where: { id },
+    include: {
+      municipality: true,
+      assignedStaff: {
+        select: {
+          fullName: true,
+          role: true,
+          email: true
+        }
+      },
+      budgets: true,
+      tasks: true
+    }
+  });
+
+  if (!result) {
+    throw new ApiError(status.NOT_FOUND, "Property info not found!");
+  }
+
+  // Financial calculations
+  const totalBudget = result.budgets.reduce((sum, item) => sum + item.budgetedAmount, 0);
+  const totalPaid = result.budgets.reduce((sum, item) => sum + item.completedAmount, 0);
+  const remaining = totalBudget - totalPaid;
+  const completion = totalBudget > 0 ? (totalPaid / totalBudget) * 100 : 0;
+
+  // Time calculations
+  const createdAt = new Date(result.createdAt);
+  const stopDate = result.closedAt ? new Date(result.closedAt) : new Date();
+  const daysActive = Math.ceil(Math.abs(stopDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+  return {
+    property: {
+      address: result.propertyAddress,
+      municipality: result.municipality.email, // Or name if available
+      status: result.vacancyStatus,
+      startDate: result.createdAt,
+      completionDate: result.closedAt,
+      daysActive
+    },
+    financials: {
+      totalBudget,
+      totalPaid,
+      remaining,
+      completionPercentage: completion.toFixed(2)
+    },
+    team: result.assignedStaff
   };
 };
 
@@ -692,4 +751,5 @@ export const PropertyInfoService = {
   getUniqueLocationsByTimezoneFromDB,
   getPropertyDashboardDataFromDB,
   getEconomicImpactFromDB,
+  getPropertyReportDataFromDB,
 };
