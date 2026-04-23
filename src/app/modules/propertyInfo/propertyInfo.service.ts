@@ -152,15 +152,21 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
     throw new ApiError(status.NOT_FOUND, "Property info not found!");
   }
 
-  // Calculate Budget Summary
+
   const budgets = result.budgets || [];
   const totalBudget = budgets.reduce((sum, item) => sum + item.budgetedAmount, 0);
   const totalCompleted = budgets.reduce((sum, item) => sum + item.completedAmount, 0);
   const totalRemaining = totalBudget - totalCompleted;
   const overallCompletion = totalBudget > 0 ? (totalCompleted / totalBudget) * 100 : 0;
 
+  const createdAt = new Date(result.createdAt);
+  const stopDate = result.closedAt ? new Date(result.closedAt) : new Date();
+  const diffTime = Math.abs(stopDate.getTime() - createdAt.getTime());
+  const daysActive = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
   return {
     ...result,
+    daysActive,
     totalTasks: result.tasks.length,
     totalDocuments: result.documents.length,
     totalMembers: result.assignedStaff.length,
@@ -181,6 +187,14 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
   }
 
   const { assignedStaffIds, tasks, budgets, budgetSummary, documents, messages, progressPhotos, ...updateData } = payload;
+
+  // Handle closedAt timestamp based on status
+  const terminalStatuses = ["Closed", "Completed", "Cancelled"];
+  if (payload.vacancyStatus && terminalStatuses.includes(payload.vacancyStatus)) {
+    (updateData as any).closedAt = new Date();
+  } else if (payload.vacancyStatus && !terminalStatuses.includes(payload.vacancyStatus)) {
+    (updateData as any).closedAt = null;
+  }
 
   const result = await prisma.propertyInfo.update({
     where: { id },
@@ -618,6 +632,51 @@ const getPropertyDashboardDataFromDB = async (userId: string) => {
   };
 };
 
+const getEconomicImpactFromDB = async (userId: string) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const properties = await prisma.propertyInfo.findMany({
+    where: { municipalityId: municipality.id },
+  });
+
+  const revenueGained = properties
+    .filter((p) => p.vacancyStatus === "Closed")
+    .reduce((sum, p) => sum + p.askingPrice, 0);
+
+  const vacantProperties = properties.filter((p) => p.vacancyStatus === "Vacant");
+  const estimatedLoss = vacantProperties.reduce((sum, p) => sum + p.askingPrice * 0.1, 0);
+
+  const taxRevenue = properties
+    .filter((p) => p.vacancyStatus !== "Vacant")
+    .reduce((sum, p) => sum + p.askingPrice * 0.015, 0);
+
+  const projectedRevenue = properties
+    .filter((p) => p.vacancyStatus === "Under Contract")
+    .reduce((sum, p) => sum + p.askingPrice, 0);
+
+  return {
+    summary: {
+      revenueGained,
+      annualTaxRevenue: taxRevenue,
+      estimatedRevenueLoss: estimatedLoss,
+    },
+    details: {
+      taxRevenueGenerated: taxRevenue,
+      projectedRevenue,
+      annualLossVacant: estimatedLoss,
+      totalCompletedProperties: properties.filter((p) => p.vacancyStatus === "Closed").length,
+      totalPropertiesInPipeline: properties.filter((p) => p.vacancyStatus === "Under Contract").length,
+      totalVacantProperties: vacantProperties.length,
+    }
+  };
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -632,4 +691,5 @@ export const PropertyInfoService = {
   getUniqueTimezonesFromDB,
   getUniqueLocationsByTimezoneFromDB,
   getPropertyDashboardDataFromDB,
+  getEconomicImpactFromDB,
 };

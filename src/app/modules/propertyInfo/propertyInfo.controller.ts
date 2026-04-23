@@ -1,4 +1,5 @@
 import status from "http-status";
+import PDFDocument from "pdfkit";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { PropertyInfoService } from "./propertyInfo.service";
@@ -147,6 +148,54 @@ const getPropertyDashboardData = catchAsync(async (req, res) => {
   });
 });
 
+const getEconomicImpact = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await PropertyInfoService.getEconomicImpactFromDB(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Economic impact data retrieved successfully!",
+    data: result,
+  });
+});
+
+const downloadEconomicImpactPDF = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const data: any = await PropertyInfoService.getEconomicImpactFromDB(userId);
+
+  const doc = new PDFDocument({ margin: 50 });
+  const filename = `Economic_Impact_Summary_${Date.now()}.pdf`;
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+
+  doc.pipe(res);
+
+  // PDF Content styling based on the mockup
+  doc.fontSize(24).text("Economic Impact Summary", { align: "center" });
+  doc.moveDown();
+
+  doc.fontSize(16).text("Summary Metrics", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Revenue Gained (Actual): $${data.summary.revenueGained.toLocaleString()}`);
+  doc.text(`Annual Tax Revenue: $${data.summary.annualTaxRevenue.toLocaleString()}`);
+  doc.fillColor("red").text(`Estimated Revenue Loss: ($${data.summary.estimatedRevenueLoss.toLocaleString()})`);
+  doc.fillColor("black").moveDown();
+
+  doc.fontSize(16).text("Property Impact Details", { underline: true });
+  doc.moveDown(0.5);
+  doc.fontSize(12).text(`Tax Revenue Generated: $${data.details.taxRevenueGenerated.toLocaleString()}`);
+  doc.text(`Projected Revenue: $${data.details.projectedRevenue.toLocaleString()}`);
+  doc.text(`Annual Loss (Vacant): $${data.details.annualLossVacant.toLocaleString()}`);
+  doc.moveDown();
+
+  doc.text(`Total Completed Properties: ${data.details.totalCompletedProperties}`);
+  doc.text(`Total Properties in Pipeline: ${data.details.totalPropertiesInPipeline}`);
+  doc.text(`Total Vacant Properties: ${data.details.totalVacantProperties}`);
+
+  doc.end();
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -160,4 +209,6 @@ export const PropertyInfoController = {
   getUniqueTimezones,
   getUniqueLocationsByTimezone,
   getPropertyDashboardData,
+  getEconomicImpact,
+  downloadEconomicImpactPDF,
 };

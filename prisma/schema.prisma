@@ -250,6 +250,7 @@ model PropertyInfo {
   documents        Document[]
   progressPhotos   ProgressPhoto[]
   timezone         String?
+  closedAt         DateTime?
 
   @@index([municipalityId])
   @@map("property_infos")

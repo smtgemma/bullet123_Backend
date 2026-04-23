@@ -67,6 +67,18 @@ router.get(
 );
 
 router.get(
+  "/economic-impact",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.getEconomicImpact
+);
+
+router.get(
+  "/download-impact-pdf",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.downloadEconomicImpactPDF
+);
+
+router.get(
   "/my-properties",
   auth(
     UserRole.MUNICIPALITY,
