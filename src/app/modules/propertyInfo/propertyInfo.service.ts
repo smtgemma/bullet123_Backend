@@ -161,6 +161,9 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
 
   return {
     ...result,
+    totalTasks: result.tasks.length,
+    totalDocuments: result.documents.length,
+    totalMembers: result.assignedStaff.length,
     budgetSummary: {
       totalBudget,
       totalCompleted,
