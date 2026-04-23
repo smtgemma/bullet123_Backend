@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Recent Activity Card -->
+        <div class="card">
+            <h2 class="card-title">Recent Activity</h2>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="icon-wrapper success">
+                        <i data-lucide="check-circle-2"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">Foundation work 35% complete</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="icon-wrapper info">
+                        <i data-lucide="message-square"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">New message from Sarah Johnson</p>
+                        <span class="activity-time">3 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="icon-wrapper primary">
+                        <i data-lucide="upload-cloud"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">3 photos uploaded</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="icon-wrapper warning">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">Mike Chen joined the team</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Tasks Card -->
+        <div class="card">
+            <h2 class="card-title">Upcoming Tasks</h2>
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="task-info">
+                        <h3 class="task-name">Initial Inspection</h3>
+                        <p class="task-assignee">Mike Chen</p>
+                    </div>
+                    <span class="badge pending">Pending</span>
+                </div>
+                <div class="task-item">
+                    <div class="task-info">
+                        <h3 class="task-name">Foundation Repair</h3>
+                        <p class="task-assignee">Sarah Johnson</p>
+                    </div>
+                    <span class="badge in-progress">In Progress</span>
+                </div>
+                <div class="task-item disabled">
+                    <div class="task-info">
+                        <h3 class="task-name">Electrical Work</h3>
+                        <p class="task-assignee">Sarah Johnson</p>
+                    </div>
+                    <span class="badge not-started">Not Started</span>
+                </div>
+                <div class="task-item disabled">
+                    <div class="task-info">
+                        <h3 class="task-name">Final Inspection</h3>
+                        <p class="task-assignee">Mike Chen</p>
+                    </div>
+                    <span class="badge not-started">Not Started</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -52,6 +52,21 @@ router.get(
 );
 
 router.get(
+  "/dashboard-data",
+  auth(
+    UserRole.MUNICIPALITY,
+    UserRole.REALTOR,
+    UserRole.CONTRACTOR,
+    UserRole.INSPECTOR,
+    UserRole.LENDER,
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN
+  ),
+  PropertyInfoController.getPropertyDashboardData
+);
+
+router.get(
   "/my-properties",
   auth(
     UserRole.MUNICIPALITY,

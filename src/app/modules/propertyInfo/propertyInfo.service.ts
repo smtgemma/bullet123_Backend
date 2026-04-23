@@ -512,6 +512,109 @@ const getUniqueLocationsByTimezoneFromDB = async (userId: string, timezone: stri
   return locations.map((l) => l.zone);
 };
 
+const getPropertyDashboardDataFromDB = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { Municipality: true }
+  });
+
+  if (!user) {
+    throw new ApiError(status.NOT_FOUND, "User not found!");
+  }
+
+  const whereProperty: any = user.role === "MUNICIPALITY" && user.Municipality
+    ? { municipalityId: user.Municipality.id }
+    : { assignedStaff: { some: { id: userId } } };
+
+  // 1. Fetch Recent Activities (Aggregated)
+  const [recentMessages, recentPhotos, recentTasks, recentBudgets] = await Promise.all([
+    prisma.message.findMany({
+      where: { property: whereProperty },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        sender: {
+          select: { fullName: true }
+        }
+      }
+    }),
+    prisma.progressPhoto.findMany({
+      where: { property: whereProperty },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        uploader: {
+          select: { fullName: true }
+        }
+      }
+    }),
+    prisma.task.findMany({
+      where: { property: whereProperty },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.budget.findMany({
+      where: { property: whereProperty },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+    })
+  ]);
+
+  const activities = [
+    ...recentMessages.map((m) => ({
+      id: m.id,
+      type: "MESSAGE",
+      title: `New message from ${m.sender.fullName}`,
+      timestamp: m.createdAt,
+      icon: "message"
+    })),
+    ...recentPhotos.map((p) => ({
+      id: p.id,
+      type: "PHOTO",
+      title: `Photos uploaded by ${p.uploader.fullName}`,
+      timestamp: p.createdAt,
+      icon: "upload"
+    })),
+    ...recentTasks.map((t) => ({
+      id: t.id,
+      type: "TASK",
+      title: `Task created: ${t.title}`,
+      timestamp: t.createdAt,
+      icon: "foundation"
+    })),
+    ...recentBudgets.map((b) => {
+      const completion = b.budgetedAmount > 0 ? (b.completedAmount / b.budgetedAmount) * 100 : 0;
+      return {
+        id: b.id,
+        type: "BUDGET",
+        title: `${b.description} ${completion.toFixed(0)}% complete`,
+        timestamp: b.updatedAt,
+        icon: "check"
+      };
+    })
+  ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 10);
+
+  // 2. Fetch Upcoming Tasks
+  const upcomingTasks = await prisma.task.findMany({
+    where: {
+      property: whereProperty,
+      status: { not: "COMPLETED" }
+    },
+    orderBy: { dueDate: "asc" },
+    take: 10,
+    include: {
+      assignees: {
+        select: { id: true, fullName: true, profilePic: true }
+      }
+    }
+  });
+
+  return {
+    activities,
+    upcomingTasks
+  };
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -525,4 +628,5 @@ export const PropertyInfoService = {
   getPropertyStatsFromDB,
   getUniqueTimezonesFromDB,
   getUniqueLocationsByTimezoneFromDB,
+  getPropertyDashboardDataFromDB,
 };

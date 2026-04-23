@@ -136,6 +136,17 @@ const getUniqueLocationsByTimezone = catchAsync(async (req, res) => {
   });
 });
 
+const getPropertyDashboardData = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await PropertyInfoService.getPropertyDashboardDataFromDB(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Dashboard data retrieved successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -148,4 +159,5 @@ export const PropertyInfoController = {
   getPropertyStats,
   getUniqueTimezones,
   getUniqueLocationsByTimezone,
+  getPropertyDashboardData,
 };
