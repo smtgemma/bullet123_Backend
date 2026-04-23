@@ -16,4 +16,5 @@ export interface IPropertyInfo {
   documents?: any[];
   messages?: any[];
   progressPhotos?: any[];
+  timezone?: string;
 }

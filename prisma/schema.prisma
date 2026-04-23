@@ -249,6 +249,7 @@ model PropertyInfo {
   messages         Message[]
   documents        Document[]
   progressPhotos   ProgressPhoto[]
+  timezone         String?
 
   @@index([municipalityId])
   @@map("property_infos")

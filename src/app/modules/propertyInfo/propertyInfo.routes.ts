@@ -40,6 +40,18 @@ router.get(
 );
 
 router.get(
+  "/unique-timezones",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.getUniqueTimezones
+);
+
+router.get(
+  "/unique-locations",
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.getUniqueLocationsByTimezone
+);
+
+router.get(
   "/my-properties",
   auth(
     UserRole.MUNICIPALITY,

@@ -50,6 +50,9 @@ class QueryBuilder {
           ...formattedFilters[field],
           [`${op}`]: isNaN(numericValue) ? value : numericValue,
         };
+      } else if (typeof value === "string") {
+        // Handle simple string filters with case-insensitivity
+        formattedFilters[key] = { contains: value, mode: "insensitive" };
       } else {
         formattedFilters[key] = value;
       }

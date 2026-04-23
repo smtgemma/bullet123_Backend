@@ -4,7 +4,7 @@ import ApiError from "../../errors/AppError";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { IPropertyInfo } from "./propertyInfo.interface";
 
-const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) => {
+const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo & { timezone?: string }) => {
   // Find municipality by userId
   const municipality = await prisma.municipality.findUnique({
     where: { userId },
@@ -15,6 +15,7 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
   }
 
   const { assignedStaffIds, tasks, budgets, budgetSummary, documents, messages, progressPhotos, ...propertyData } = payload;
+  console.log("DEBUG: Incoming payload for creation:", JSON.stringify(payload, null, 2));
 
   // Validate Staff IDs
   if (assignedStaffIds && assignedStaffIds.length > 0) {
@@ -31,8 +32,8 @@ const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo) 
   const result = await prisma.propertyInfo.create({
     data: {
       ...propertyData,
+      timezone: payload.timezone,
       municipalityId: municipality.id,
-      // Keep individual assignment for direct access tracking
       assignedStaff: assignedStaffIds ? {
         connect: assignedStaffIds.map(id => ({ id }))
       } : undefined
@@ -471,6 +472,46 @@ const getPropertyStatsFromDB = async (userId: string) => {
   };
 };
 
+const getUniqueTimezonesFromDB = async (userId: string) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const timezones = await prisma.propertyInfo.groupBy({
+    by: ["timezone"],
+    where: {
+      municipalityId: municipality.id,
+      NOT: { timezone: null },
+    },
+  });
+
+  return timezones.map((t) => t.timezone);
+};
+
+const getUniqueLocationsByTimezoneFromDB = async (userId: string, timezone: string) => {
+  const municipality = await prisma.municipality.findUnique({
+    where: { userId },
+  });
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const locations = await prisma.propertyInfo.groupBy({
+    by: ["zone"],
+    where: {
+      municipalityId: municipality.id,
+      timezone: timezone,
+    },
+  });
+
+  return locations.map((l) => l.zone);
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -482,4 +523,6 @@ export const PropertyInfoService = {
   removeStaffFromPropertyInDB,
   bulkUploadPropertyInfosFromCSV,
   getPropertyStatsFromDB,
+  getUniqueTimezonesFromDB,
+  getUniqueLocationsByTimezoneFromDB,
 };

@@ -12,6 +12,7 @@ const createPropertyInfoValidationSchema = z.object({
     disposition: z.string({ required_error: "Disposition is required" }),
     images: z.array(z.string()).optional(),
     assignedStaffIds: z.array(z.string()).optional(),
+    timezone: z.string().optional(),
   }),
 });
 
@@ -27,6 +28,7 @@ const updatePropertyInfoValidationSchema = z.object({
     disposition: z.string().optional(),
     images: z.array(z.string()).optional(),
     assignedStaffIds: z.array(z.string()).optional(),
+    timezone: z.string().optional(),
   }),
 });
 
