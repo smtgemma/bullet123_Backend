@@ -325,25 +325,25 @@ const removeStaffFromPropertyInDB = async (propertyId: string, staffId: string) 
 };
 
 function parseCSVLine(line: string) {
-    const result = [];
-    let currentStr = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"' && line[i+1] === '"') {
-            currentStr += '"';
-            i++; 
-        } else if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            result.push(currentStr.trim());
-            currentStr = '';
-        } else {
-            currentStr += char;
-        }
+  const result = [];
+  let currentStr = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"' && line[i + 1] === '"') {
+      currentStr += '"';
+      i++;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(currentStr.trim());
+      currentStr = '';
+    } else {
+      currentStr += char;
     }
-    result.push(currentStr.trim());
-    return result;
+  }
+  result.push(currentStr.trim());
+  return result;
 }
 
 const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer) => {
@@ -357,7 +357,7 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
 
   const csvText = fileBuffer.toString("utf-8");
   const lines = csvText.split(/\r?\n/).filter((line) => line.trim() !== "");
-  
+
   if (lines.length <= 1) {
     throw new ApiError(status.BAD_REQUEST, "CSV file is empty or missing data rows");
   }
@@ -367,12 +367,12 @@ const bulkUploadPropertyInfosFromCSV = async (userId: string, fileBuffer: Buffer
 
   for (let i = 1; i < lines.length; i++) {
     const currentline = parseCSVLine(lines[i]);
-    
+
     const obj: any = {};
     for (let j = 0; j < headers.length; j++) {
-       obj[headers[j]] = currentline[j];
+      obj[headers[j]] = currentline[j];
     }
-    
+
     properties.push({
       municipalityId: municipality.id,
       propertyAddress: obj.propertyAddress || obj.address || "No Address Provided",
@@ -405,24 +405,68 @@ const getPropertyStatsFromDB = async (userId: string) => {
     throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
   }
 
-  const stats = await prisma.propertyInfo.groupBy({
-    by: ["vacancyStatus"],
-    where: { municipalityId: municipality.id },
-    _count: { id: true },
-    _sum: { askingPrice: true },
-  });
+  const now = new Date();
+  const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  const totalProperties = await prisma.propertyInfo.count({
-    where: { municipalityId: municipality.id },
-  });
+  // Helper to calculate percentage change with explicit sign
+  const calculateChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? "+100%" : "0%";
+    const change = parseFloat(((current - previous) / previous * 100).toFixed(1));
+    return change > 0 ? `+${change}%` : `${change}%`;
+  };
+
+  const getStats = async (startDate?: Date, endDate?: Date) => {
+    const where: any = { municipalityId: municipality.id };
+    if (startDate || endDate) {
+      where.createdAt = {
+        ...(startDate && { gte: startDate }),
+        ...(endDate && { lte: endDate }),
+      };
+    }
+
+    const [total, vacant, underContract, closed] = await Promise.all([
+      prisma.propertyInfo.count({ where }),
+      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: "Vacant" } }),
+      prisma.propertyInfo.count({ where: { ...where, vacancyStatus: "Under Contract" } }),
+      prisma.propertyInfo.aggregate({
+        where: { ...where, vacancyStatus: "Closed" },
+        _count: { id: true },
+        _sum: { askingPrice: true },
+      }),
+    ]);
+
+    return {
+      total,
+      vacant,
+      underContract,
+      closedCount: closed._count.id,
+      closedValue: closed._sum.askingPrice || 0,
+    };
+  };
+
+  const currentStats = await getStats();
+  const lastMonthStats = await getStats(startOfLastMonth, endOfLastMonth);
+  const previousTotalStats = await getStats(undefined, endOfLastMonth);
 
   return {
-    totalProperties,
-    vacant: stats.find((s) => s.vacancyStatus === "Vacant")?._count.id || 0,
-    underContract: stats.find((s) => s.vacancyStatus === "Under Contract")?._count.id || 0,
+    totalProperties: {
+      count: currentStats.total,
+      change: calculateChange(currentStats.total, previousTotalStats.total),
+    },
+    vacant: {
+      count: currentStats.vacant,
+      change: calculateChange(currentStats.vacant, previousTotalStats.vacant),
+    },
+    underContract: {
+      count: currentStats.underContract,
+      change: calculateChange(currentStats.underContract, previousTotalStats.underContract),
+    },
     closed: {
-      count: stats.find((s) => s.vacancyStatus === "Closed")?._count.id || 0,
-      totalValue: stats.find((s) => s.vacancyStatus === "Closed")?._sum.askingPrice || 0,
+      count: currentStats.closedCount,
+      totalValue: currentStats.closedValue,
+      avgRevenue: currentStats.total > 0 ? parseFloat((currentStats.closedValue / currentStats.total).toFixed(2)) : 0,
     },
   };
 };
