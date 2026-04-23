@@ -255,6 +255,17 @@ const downloadPropertyReportPDF = catchAsync(async (req, res) => {
   doc.end();
 });
 
+const getPropertyReportData = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await PropertyInfoService.getPropertyReportDataFromDB(id as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Property report data retrieved successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -271,4 +282,5 @@ export const PropertyInfoController = {
   getEconomicImpact,
   downloadEconomicImpactPDF,
   downloadPropertyReportPDF,
+  getPropertyReportData,
 };
