@@ -234,6 +234,7 @@ model PropertyInfo {
   parcelId        Int
   zone            String
   propertyType    String
+  sqft            Float           @default(0)
   vacancyStatus   PropertyStatus  @default(VACANT)
   description     String?
   askingPrice     Float
