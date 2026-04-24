@@ -28,18 +28,19 @@ const getAllQuestions = async (query: Record<string, unknown>) => {
   // Custom query builder behavior for Trending / Unanswered
   const rawFilterInput: any = {};
 
-  if (query.filterType === "unanswered") {
+  // Inject sorting/filtering based on filterType
+  if (query.filterType === "trending") {
+    query.sort = "-upvotes,-views";
+  } else if (query.filterType === "unanswered") {
     rawFilterInput.answers = { none: {} };
+    query.sort = "-createdAt";
+  } else if (query.filterType === "recent") {
+    query.sort = "-createdAt";
   }
 
   // Tag filtering (Array match check)
   if (query.tag) {
     rawFilterInput.tags = { has: query.tag as string };
-  }
-
-  // Inject sorting for trending before building query
-  if (query.filterType === "trending") {
-    query.sort = "-upvotes,-views";
   }
 
   const queryBuilder = new QueryBuilder(prisma.question, query)
@@ -210,6 +211,47 @@ const deleteAnswer = async (id: string, userId: string, role: string) => {
   return true;
 };
 
+// --- Statistics / Aggregates ---
+
+const getTopContributors = async () => {
+  const contributors = await prisma.user.findMany({
+    where: {
+      answers: { some: {} }
+    },
+    select: {
+      id: true,
+      fullName: true,
+      profilePic: true,
+      role: true,
+      _count: {
+        select: { answers: true }
+      }
+    },
+    orderBy: {
+      answers: {
+        _count: "desc"
+      }
+    },
+    take: 5
+  });
+
+  return contributors;
+};
+
+const getPopularTags = async () => {
+  // Prisma doesn't support direct aggregation on string arrays yet.
+  // We use a raw query and cast the count to integer (::int) to avoid BigInt serialization issues.
+  const result: any = await prisma.$queryRaw`
+    SELECT unnest(tags) as tag, count(*)::int as count
+    FROM questions
+    GROUP BY tag
+    ORDER BY count DESC
+    LIMIT 10
+  `;
+
+  return result;
+};
+
 export const QaServices = {
   createQuestion,
   getAllQuestions,
@@ -222,5 +264,7 @@ export const QaServices = {
   upvoteAnswer,
   acceptAnswer,
   updateAnswer,
-  deleteAnswer
+  deleteAnswer,
+  getTopContributors,
+  getPopularTags
 };

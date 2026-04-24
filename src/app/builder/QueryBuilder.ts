@@ -36,6 +36,8 @@ class QueryBuilder {
       "location",
       "dateField",
       "locationFields",
+      "filterType",
+      "tag",
     ];
     excludeFields.forEach((field) => delete queryObj[field]);
 

@@ -32,7 +32,6 @@ const getEffectivePrice = (plan: any): number => {
   return plan.price;
 };
 
-
 const createSubscription = async (userId: string, planId: string) => {
 
 
@@ -194,8 +193,6 @@ const createSubscription = async (userId: string, planId: string) => {
     timeout: 30000,
   });
 };
-
-
 
 const handlePaymentIntentSucceeded = async (paymentIntent: Stripe.PaymentIntent) => {
   const { userId, planId } = paymentIntent.metadata;
