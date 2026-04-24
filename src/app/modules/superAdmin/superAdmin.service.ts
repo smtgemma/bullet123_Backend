@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../../utils/prisma";
 
+// Service functions for Super Admin module
 const getDashboardStats = async () => {
   const totalProperties = await prisma.propertyInfo.count();
   const activeCities = await prisma.municipality.count();
