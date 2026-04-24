@@ -73,7 +73,6 @@ const logActivity = async (action: string, details: string) => {
     },
   });
 };
-
 export const SuperAdminService = {
   getDashboardStats,
   getRecentActivities,
