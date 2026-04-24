@@ -6,6 +6,7 @@ export interface IPropertyInfo {
   parcelId: number;
   zone: string;
   propertyType: string;
+  sqft?: number;
   vacancyStatus: PropertyStatus;
   description?: string;
   askingPrice: number;

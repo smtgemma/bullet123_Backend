@@ -573,8 +573,43 @@ const getMe = async (email: string) => {
       isVerified: true,
       isSubscribed: true,
       planExpiration: true,
+      lastActiveAt: true,
+      stripeCustomerId: true,
+      createdAt: true,
+      updatedAt: true,
       Profile: true,
-      Subscription: true,
+      Subscription: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+      },
+      Municipality: true,
+      staffMunicipality: {
+        include: {
+          user: {
+            select: {
+              fullName: true,
+              email: true,
+              profilePic: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          Notifications: true,
+          meetings: true,
+          assignedProperties: true,
+          tasks: true,
+          signedDocuments: true,
+          writtenReviews: true,
+          receivedReviews: true,
+          successStories: true,
+          questions: true,
+          answers: true,
+        },
+      },
     },
   });
 
