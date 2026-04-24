@@ -45,4 +45,11 @@ router.patch("/answers/:id", auth(), QaController.updateAnswer);
 // 5. Delete an answer
 router.delete("/answers/:id", auth(), QaController.deleteAnswer);
 
+// ========================
+// STATISTICS / AGGREGATES
+// ========================
+
+router.get("/top-contributors", QaController.getTopContributors);
+router.get("/popular-tags", QaController.getPopularTags);
+
 export const QaRoutes = router;
