@@ -60,7 +60,22 @@ const getAllQuestions = async (query: Record<string, unknown>) => {
       },
       _count: {
         select: { answers: true }
-      }
+      },
+      answers: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              fullName: true,
+              profilePic: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     });
 
   // Apply custom raw filters
