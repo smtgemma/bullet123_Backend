@@ -40,8 +40,19 @@ const updateUserBlocked = catchAsync(async (req: Request, res: Response) => {
    });
 });
 
+const getComplianceLogs = catchAsync(async (req: Request, res: Response) => {
+  const result = await SuperAdminService.getComplianceLogs(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Compliance logs retrieved successfully",
+    data: result,
+  });
+});
+
 export const SuperAdminController = {
    getDashboardStats,
    getRecentActivities,
    updateUserBlocked,
+   getComplianceLogs
 };

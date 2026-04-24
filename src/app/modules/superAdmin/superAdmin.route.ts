@@ -23,4 +23,10 @@ router.patch(
    SuperAdminController.updateUserBlocked,
 );
 
+router.get(
+  "/compliance-logs",
+  auth(UserRole.SUPER_ADMIN),
+  SuperAdminController.getComplianceLogs
+);
+
 export const SuperAdminRoutes = router;

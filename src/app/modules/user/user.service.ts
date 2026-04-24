@@ -283,7 +283,7 @@ const deleteMeFromDB = async (userId: string, password: string) => {
 
   return null;
 };
-const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
+const chengeUserRoleIntoDB = async (userId: string, role: UserRole, performingUser?: any, ip?: string) => {
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -305,10 +305,12 @@ const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
     },
   });
 
-  await SuperAdminService.logActivity(
-    "Role Approved",
-    `Approved ${role} role for ${updatedUser.fullName}`
-  );
+  await SuperAdminService.logActivity({
+    action: "Role Approved",
+    details: `Approved ${role} role for ${updatedUser.fullName}`,
+    userId: performingUser?.id,
+    ipAddress: ip
+  });
 
   return updatedUser;
 }

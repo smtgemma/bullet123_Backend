@@ -187,7 +187,7 @@ const getSinglePropertyInfoFromDB = async (id: string) => {
   };
 };
 
-const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyInfo>) => {
+const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyInfo>, performingUser?: any, ip?: string) => {
   const isExist = await prisma.propertyInfo.findUnique({ where: { id } });
 
   if (!isExist) {
@@ -226,10 +226,12 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
   });
 
   if (payload.vacancyStatus && payload.vacancyStatus !== isExist.vacancyStatus) {
-    await SuperAdminService.logActivity(
-      "Property Status Changed",
-      `Changed ${isExist.propertyAddress || id} status to ${payload.vacancyStatus}`
-    );
+    await SuperAdminService.logActivity({
+      action: "Property Status Changed",
+      details: `Changed ${isExist.propertyAddress || id} status to ${payload.vacancyStatus}`,
+      userId: performingUser?.id,
+      ipAddress: ip
+    });
   }
 
   return result;

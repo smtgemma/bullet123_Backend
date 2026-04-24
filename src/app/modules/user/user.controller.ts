@@ -96,7 +96,7 @@ const chengeUserRoleIntoDB= catchAsync(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;    
 
-  const result = await UserService.chengeUserRoleIntoDB(id as string, role);
+  const result = await UserService.chengeUserRoleIntoDB(id as string, role, req.user, req.ip);
 
   sendResponse(res, {
     statusCode: status.OK,

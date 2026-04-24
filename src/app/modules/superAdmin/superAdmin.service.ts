@@ -1,18 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../../utils/prisma";
+import QueryBuilder from "../../builder/QueryBuilder";
 
-// Service functions for Super Admin module
 const getDashboardStats = async () => {
    const totalProperties = await prisma.propertyInfo.count();
-   const activeCities = await prisma.municipality.count();
 
-   // For Pending Roles, we count users who are not verified (proxy for pending approval)
-   const pendingRoles = await prisma.user.count({
-      where: {
-         isVerified: false,
-         isDeleted: false,
-      },
-   });
+  const activeCities = await prisma.municipality.count();
+  
+  const pendingRoles = await prisma.user.count({
+    where: {
+      isVerified: false,
+      isDeleted: false,
+    },
+  });
 
    // For Active Projects, we count properties that are not cancelled or closed
    const activeProjects = await prisma.propertyInfo.count({
@@ -32,48 +32,53 @@ const getDashboardStats = async () => {
 };
 
 const getRecentActivities = async () => {
-   const activities = await prisma.activityLog.findMany({
-      orderBy: {
-         createdAt: "desc",
+  const activities = await prisma.activityLog.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+    include: {
+      user: {
+        select: {
+          email: true,
+          fullName: true,
+        },
       },
-      take: 10,
-   });
+    },
+  });
 
-   // If no activities exist, return some mock data to match the image
-   if (activities.length === 0) {
-      return [
-         {
-            id: "1",
-            action: "Role Approved",
-            details: "Approved Inspector role for Sarah Wilson",
-            createdAt: "2026-01-19T14:23:15Z",
-         },
-         {
-            id: "2",
-            action: "Property Status Changed",
-            details: "Changed PROP-001 status to Active",
-            createdAt: "2026-01-19T13:15:42Z",
-         },
-         {
-            id: "3",
-            action: "Municipality Approved",
-            details: "Approved City of Flint onboarding",
-            createdAt: "2026-01-19T11:30:22Z",
-         },
-      ];
-   }
+  if (activities.length === 0) {
+    return [
+      {
+        id: "1",
+        action: "Role Approved",
+        details: "Approved Inspector role for Sarah Wilson",
+        ipAddress: "192.168.1.100",
+        createdAt: "2026-01-19T14:23:15Z",
+        user: { email: "admin@homewrk.com", fullName: "Admin" }
+      },
+      {
+        id: "2",
+        action: "Property Status Changed",
+        details: "Changed PROP-001 status to Active",
+        ipAddress: "192.168.1.105",
+        createdAt: "2026-01-19T13:15:42Z",
+        user: { email: "john@detroit.gov", fullName: "John" }
+      },
+      {
+        id: "3",
+        action: "Municipality Approved",
+        details: "Approved City of Flint onboarding",
+        ipAddress: "192.168.1.100",
+        createdAt: "2026-01-19T11:30:22Z",
+        user: { email: "admin@homewrk.com", fullName: "Admin" }
+      },
+    ];
+  }
 
    return activities;
 };
 
-const logActivity = async (action: string, details: string) => {
-   return await prisma.activityLog.create({
-      data: {
-         action,
-         details,
-      },
-   });
-};
 
 const updateUserBlocked = async (id: string, blockReason: string) => {
    const existingUser = await prisma.user.findUnique({
@@ -101,15 +106,15 @@ const updateUserBlocked = async (id: string, blockReason: string) => {
    });
 
    if (isBlocked) {
-      await logActivity(
-         "User Blocked",
-         `User ${existingUser.fullName} has been blocked by super admin`,
-      );
+      await logActivity({
+         action: "User Blocked",
+         details: `User ${existingUser.fullName} has been blocked by super admin for reason: ${blockReason}`,
+      });
    } else {
-      await logActivity(
-         "User Unblocked",
-         `User ${existingUser.fullName} has been unblocked by super admin`,
-      );
+      await logActivity({
+         action: "User Unblocked",
+         details: `User ${existingUser.fullName} has been unblocked by super admin`,
+      });
    }
 
    return {
@@ -118,9 +123,46 @@ const updateUserBlocked = async (id: string, blockReason: string) => {
    };
 };
 
+const getComplianceLogs = async (query: Record<string, unknown>) => {
+  const queryBuilder = new QueryBuilder(prisma.activityLog, query)
+    .search(["action", "details", "ipAddress"])
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
+    .include({
+      user: {
+        select: {
+          email: true,
+          fullName: true,
+        },
+      },
+    });
+
+  const result = await queryBuilder.execute();
+  const meta = await queryBuilder.countTotal();
+
+  return {
+    meta,
+    data: result,
+  };
+};
+
+const logActivity = async (payload: { action: string; details: string; userId?: string; ipAddress?: string }) => {
+  return await prisma.activityLog.create({
+    data: {
+      action: payload.action,
+      details: payload.details,
+      userId: payload.userId,
+      ipAddress: payload.ipAddress,
+    },
+  });
+};
+
 export const SuperAdminService = {
-   getDashboardStats,
-   getRecentActivities,
-   logActivity,
-   updateUserBlocked,
+  getDashboardStats,
+  getRecentActivities,
+  getComplianceLogs,
+  logActivity,
+  updateUserBlocked
 };

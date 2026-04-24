@@ -207,7 +207,7 @@ const register = async (payload: RegisterPayload) => {
 };
 
 // ── Verify OTP ─────────────────────────────────────────────────────────────
-const verifyOTP = async (email: string, otpCode: string) => {
+const verifyOTP = async (email: string, otpCode: string, ip?: string) => {
   if (!email || !otpCode) {
     throw new ApiError(status.BAD_REQUEST, "Email and OTP are required!");
   }
@@ -273,10 +273,12 @@ const verifyOTP = async (email: string, otpCode: string) => {
         },
       });
 
-      await SuperAdminService.logActivity(
-        "Municipality Approved",
-        `Approved ${user.fullName} onboarding`
-      );
+      await SuperAdminService.logActivity({
+        action: "Municipality Approved",
+        details: `Approved ${user.fullName} onboarding`,
+        userId: user.id,
+        ipAddress: ip
+      });
     }
   });
 

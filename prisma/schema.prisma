@@ -43,6 +43,7 @@ model User {
   answers            Answer[]        @relation("UserAnswers")
   municipalityId     String?
   staffMunicipality  Municipality?   @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  activityLogs       ActivityLog[]
 
   @@map("users")
 }
@@ -510,7 +511,10 @@ model ActivityLog {
   id        String   @id @default(uuid())
   action    String
   details   String
+  userId    String?
+  ipAddress String?
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@map("activity_logs")
 }

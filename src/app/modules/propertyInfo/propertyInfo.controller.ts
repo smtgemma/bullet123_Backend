@@ -47,7 +47,7 @@ const getSinglePropertyInfo = catchAsync(async (req, res) => {
 
 const updatePropertyInfo = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await PropertyInfoService.updatePropertyInfoIntoDB(id as string, req.body);
+  const result = await PropertyInfoService.updatePropertyInfoIntoDB(id as string, req.body, req.user, req.ip);
 
   sendResponse(res, {
     statusCode: status.OK,
