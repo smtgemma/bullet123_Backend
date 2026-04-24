@@ -16,6 +16,8 @@ model User {
   isVerified         Boolean         @default(false)
   role               UserRole        @default(USER)
   isSubscribed       Boolean         @default(false)
+  isBlocked          Boolean         @default(false)
+  blockReason        String?
   planExpiration     DateTime?
   lastActiveAt       DateTime?
   createdAt          DateTime        @default(now())
