@@ -9,7 +9,7 @@ const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
-    success: true,
+   
     message: "Dashboard stats retrieved successfully",
     data: result,
   });
@@ -20,7 +20,7 @@ const getRecentActivities = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
-    success: true,
+
     message: "Recent activities retrieved successfully",
     data: result,
   });
