@@ -17,6 +17,7 @@ import { ProgressPhotoRoutes } from "../modules/progressPhoto/progressPhoto.rout
 import { reviewRoute } from "../modules/review/review.route";
 import { SuccessStoryRoutes } from "../modules/successStory/successStory.route";
 import { QaRoutes } from "../modules/qa/qa.route";
+import { SuperAdminRoutes } from "../modules/superAdmin/superAdmin.route";
 import { imagesHostRoute } from "../utils/imagehost";
 
 const router = Router();
@@ -99,6 +100,10 @@ const moduleRoutes = [
   {
     path:"/uploads",
     route:imagesHostRoute
+  },
+  {
+    path: "/super-admin",
+    route: SuperAdminRoutes,
   }
 ];
 

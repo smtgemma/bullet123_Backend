@@ -10,6 +10,7 @@ import { hashPassword } from "../../helpers/hashPassword";
 import AppError from "../../errors/AppError";
 import redisClient from "../../config/redis";
 import { UserRole } from "@prisma/client";
+import { SuperAdminService } from "../superAdmin/superAdmin.service";
 
 // ── OTP Email Template ─────────────────────────────────────────────────────
 const buildOtpEmail = (email: string, otp: string): string => `
@@ -271,6 +272,11 @@ const verifyOTP = async (email: string, otpCode: string) => {
           email: user.email,
         },
       });
+
+      await SuperAdminService.logActivity(
+        "Municipality Approved",
+        `Approved ${user.fullName} onboarding`
+      );
     }
   });
 

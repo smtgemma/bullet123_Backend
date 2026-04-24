@@ -9,6 +9,7 @@ import { jwtHelpers } from "./../../helpers/jwtHelpers";
 import { hashPassword } from "../../helpers/hashPassword";
 import { get } from "http";
 import { passwordCompare } from "../../helpers/comparePasswords";
+import { SuperAdminService } from "../superAdmin/superAdmin.service";
 
 const getAllUserFromDB = async (query: Record<string, unknown>) => {
   const include = {
@@ -304,6 +305,12 @@ const chengeUserRoleIntoDB = async (userId: string, role: UserRole) => {
     },
   });
 
+  await SuperAdminService.logActivity(
+    "Role Approved",
+    `Approved ${role} role for ${updatedUser.fullName}`
+  );
+
+  return updatedUser;
 }
 const inviteUserToAdminToDB = async (payload: { email: string, fullName: string, description: string }) => {
   const isUserExistByEmail = await prisma.user.findUnique({
