@@ -7,39 +7,39 @@ datasource db {
 }
 
 model User {
-  id                String         @id @default(uuid())
-  fullName          String
-  email             String         @unique
-  password          String
-  profilePic        String?
-  passwordChangedAt DateTime?
-  isVerified        Boolean        @default(false)
-  role              UserRole       @default(USER)
-  isSubscribed      Boolean        @default(false)
-  planExpiration    DateTime?
-  lastActiveAt      DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  stripeCustomerId  String?
-  isDeleted         Boolean        @default(false)
-  Notifications     Notification[]
-  Profile           Profile?
+  id                 String          @id @default(uuid())
+  fullName           String
+  email              String          @unique
+  password           String
+  profilePic         String?
+  passwordChangedAt  DateTime?
+  isVerified         Boolean         @default(false)
+  role               UserRole        @default(USER)
+  isSubscribed       Boolean         @default(false)
+  planExpiration     DateTime?
+  lastActiveAt       DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  stripeCustomerId   String?
+  isDeleted          Boolean         @default(false)
+  Notifications      Notification[]
+  Profile            Profile?
   meetings           Meeting[]
   Subscription       Subscription[]
-  Municipality       Municipality?  @relation(name: "MunicipalityUser")
+  Municipality       Municipality?   @relation(name: "MunicipalityUser")
   assignedProperties PropertyInfo[]
   tasks              Task[]
-  sentMessages       Message[]      @relation("SentMessages")
-  receivedMessages   Message[]      @relation("ReceivedMessages")
-  signedDocuments    Document[]     @relation("SignatoryUser")
+  sentMessages       Message[]       @relation("SentMessages")
+  receivedMessages   Message[]       @relation("ReceivedMessages")
+  signedDocuments    Document[]      @relation("SignatoryUser")
   uploadedPhotos     ProgressPhoto[] @relation("PhotoUploader")
-  writtenReviews     Review[]       @relation("ReviewAuthor")
-  receivedReviews    Review[]       @relation("ProfessionalReviews")
-  successStories     SuccessStory[] @relation("UserSuccessStories")
-  questions          Question[]     @relation("UserQuestions")
-  answers            Answer[]       @relation("UserAnswers")
+  writtenReviews     Review[]        @relation("ReviewAuthor")
+  receivedReviews    Review[]        @relation("ProfessionalReviews")
+  successStories     SuccessStory[]  @relation("UserSuccessStories")
+  questions          Question[]      @relation("UserQuestions")
+  answers            Answer[]        @relation("UserAnswers")
   municipalityId     String?
-  staffMunicipality  Municipality?  @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  staffMunicipality  Municipality?   @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
 
   @@map("users")
 }
@@ -137,16 +137,16 @@ model Blog {
 }
 
 model Profile {
-  id               String    @id @default(uuid())
-  userId           String    @unique
-  birthDate        DateTime?
-  bio              String?
-  location         String?  
-  website          String?
-  phone            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  birthDate DateTime?
+  bio       String?
+  location  String?
+  website   String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OtpModel {
@@ -211,16 +211,14 @@ model Subscriber {
   unsubscribedAt DateTime?
 }
 
-
-
 model Municipality {
-  id         String         @id @default(uuid())
-  userId     String         @unique
-  user       User           @relation(name: "MunicipalityUser", fields: [userId], references: [id], onDelete: Cascade)
-  email      String
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(name: "MunicipalityUser", fields: [userId], references: [id], onDelete: Cascade)
+  email  String
 
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   properties PropertyInfo[]
   staffs     User[]         @relation(name: "StaffMunicipality")
@@ -229,126 +227,122 @@ model Municipality {
 }
 
 model PropertyInfo {
-  id               String       @id @default(cuid())
-  municipalityId   String
-  municipality     Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
-  propertyAddress  String
-  parcelId         Int
-  zone             String
-  propertyType     String
-  vacancyStatus    PropertyStatus @default(VACANT)
-  description      String?
-  askingPrice      Float
-  disposition      String
-  images           String[]
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  assignedStaff    User[]
-  tasks            Task[]
-  budgets          Budget[]
-  messages         Message[]
-  documents        Document[]
-  progressPhotos   ProgressPhoto[]
-  timezone         String?
-  closedAt         DateTime?
+  id              String          @id @default(cuid())
+  municipalityId  String
+  municipality    Municipality    @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  propertyAddress String
+  parcelId        Int
+  zone            String
+  propertyType    String
+  vacancyStatus   PropertyStatus  @default(VACANT)
+  description     String?
+  askingPrice     Float
+  disposition     String
+  images          String[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  assignedStaff   User[]
+  tasks           Task[]
+  budgets         Budget[]
+  messages        Message[]
+  documents       Document[]
+  progressPhotos  ProgressPhoto[]
+  timezone        String?
+  closedAt        DateTime?
 
   @@index([municipalityId])
   @@map("property_infos")
 }
 
 model ProgressPhoto {
-  id               String       @id @default(uuid())
-  description      String?
-  url              String
-  
-  uploaderId       String
-  uploader         User         @relation("PhotoUploader", fields: [uploaderId], references: [id])
-  
-  propertyId       String
-  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id          String  @id @default(uuid())
+  description String?
+  url         String
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  uploaderId String
+  uploader   User   @relation("PhotoUploader", fields: [uploaderId], references: [id])
+
+  propertyId String
+  property   PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("progress_photos")
 }
 
-
 model Document {
-  id                String       @id @default(uuid())
-  name              String
-  type              String
-  fileUrl           String
-  fileSize          String?
-  
-  isSigningRequired Boolean      @default(false)
-  signatoryId       String?
-  signatory         User?        @relation("SignatoryUser", fields: [signatoryId], references: [id])
-  signedAt          DateTime?
-  
-  propertyId        String
-  property          PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id       String  @id @default(uuid())
+  name     String
+  type     String
+  fileUrl  String
+  fileSize String?
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  isSigningRequired Boolean   @default(false)
+  signatoryId       String?
+  signatory         User?     @relation("SignatoryUser", fields: [signatoryId], references: [id])
+  signedAt          DateTime?
+
+  propertyId String
+  property   PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("documents")
 }
 
-
 model Message {
-  id               String       @id @default(uuid())
-  content          String
-  
-  senderId         String
-  sender           User         @relation(name: "SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  
-  receiverId       String?
-  receiver         User?        @relation(name: "ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  content String
 
-  propertyId       String?
-  property         PropertyInfo? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   User   @relation(name: "SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
-  isRead           Boolean      @default(false)
+  receiverId String?
+  receiver   User?   @relation(name: "ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  propertyId String?
+  property   PropertyInfo? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("messages")
 }
 
-
 model Budget {
-  id               String       @id @default(uuid())
-  description      String
-  budgetedAmount   Float
-  completedAmount  Float        @default(0)
-  
-  propertyId       String
-  property         PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id              String @id @default(uuid())
+  description     String
+  budgetedAmount  Float
+  completedAmount Float  @default(0)
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  propertyId String
+  property   PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("budgets")
 }
 
-
 model Task {
-  id          String       @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String?
   dueDate     DateTime
   file        String?
-  status      TaskStatus   @default(TODO)
-  
-  propertyId  String
-  property    PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  
-  assignees   User[]
+  status      TaskStatus @default(TODO)
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  propertyId String
+  property   PropertyInfo @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  assignees User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("tasks")
 }
@@ -358,7 +352,6 @@ enum TaskStatus {
   IN_PROGRESS
   COMPLETED
 }
-
 
 enum SubscriptionStatus {
   ACTIVE
@@ -448,9 +441,9 @@ model SuccessStory {
   propertyAddress String
   price           Float?
   description     String
-  beforeImages    String[] 
-  afterImages     String[] 
-  userId          String   
+  beforeImages    String[]
+  afterImages     String[]
+  userId          String
   user            User     @relation("UserSuccessStories", fields: [userId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -459,39 +452,39 @@ model SuccessStory {
 }
 
 model Question {
-  id          String   @id @default(uuid())
-  title       String
-  details     String
-  tags        String[]
-  category    String?
-  views       Int      @default(0)
-  upvotes     Int      @default(0)
+  id       String   @id @default(uuid())
+  title    String
+  details  String
+  tags     String[]
+  category String?
+  views    Int      @default(0)
+  upvotes  Int      @default(0)
 
-  authorId    String
-  author      User     @relation("UserQuestions", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation("UserQuestions", fields: [authorId], references: [id], onDelete: Cascade)
 
-  answers     Answer[]
+  answers Answer[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("questions")
 }
 
 model Answer {
-  id          String   @id @default(uuid())
-  content     String
-  upvotes     Int      @default(0)
-  isAccepted  Boolean  @default(false)
+  id         String  @id @default(uuid())
+  content    String
+  upvotes    Int     @default(0)
+  isAccepted Boolean @default(false)
 
-  authorId    String
-  author      User     @relation("UserAnswers", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation("UserAnswers", fields: [authorId], references: [id], onDelete: Cascade)
 
-  questionId  String
-  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("answers")
 }
@@ -502,4 +495,13 @@ enum PropertyStatus {
   CLOSED
   COMPLETED
   CANCELLED
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
 }

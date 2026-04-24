@@ -4,6 +4,7 @@ import prisma from "../../utils/prisma";
 import ApiError from "../../errors/AppError";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { IPropertyInfo } from "./propertyInfo.interface";
+import { SuperAdminService } from "../superAdmin/superAdmin.service";
 
 const createPropertyInfoIntoDB = async (userId: string, payload: IPropertyInfo & { timezone?: string }) => {
   // Find municipality by userId
@@ -223,6 +224,13 @@ const updatePropertyInfoIntoDB = async (id: string, payload: Partial<IPropertyIn
       },
     }
   });
+
+  if (payload.vacancyStatus && payload.vacancyStatus !== isExist.vacancyStatus) {
+    await SuperAdminService.logActivity(
+      "Property Status Changed",
+      `Changed ${isExist.propertyAddress || id} status to ${payload.vacancyStatus}`
+    );
+  }
 
   return result;
 };
