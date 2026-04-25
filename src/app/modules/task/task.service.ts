@@ -3,14 +3,14 @@ import ApiError from "../../errors/AppError";
 import status from "http-status";
 
 const createTaskIntoDB = async (payload: any) => {
-  const { title, description, dueDate, assigneeIds, propertyId, file } = payload;
+  const { title, description, dueDate, assigneeIds, propertyId, link } = payload;
 
   const result = await prisma.task.create({
     data: {
       title,
       description,
       dueDate: new Date(dueDate),
-      file,
+      link,
       propertyId,
       assignees: {
         connect: assigneeIds.map((id: string) => ({ id })),

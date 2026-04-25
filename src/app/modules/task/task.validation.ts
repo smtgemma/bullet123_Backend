@@ -7,6 +7,7 @@ const createTaskValidationSchema = z.object({
     dueDate: z.string({ required_error: "Due date is required" }), // Will be parsed as Date
     assigneeIds: z.array(z.string({ required_error: "Assignee IDs are required" })),
     propertyId: z.string({ required_error: "Property ID is required" }),
+    link: z.string().optional(),
   }),
 });
 
@@ -27,7 +28,7 @@ const updateTaskValidationSchema = z.object({
     title: z.string().optional(),
     description: z.string().optional(),
     dueDate: z.string().optional(),
-    file: z.string().optional(),
+    link: z.string().optional(),
     status: z.enum(["TODO", "IN_PROGRESS", "COMPLETED"]).optional(),
   }),
 });
