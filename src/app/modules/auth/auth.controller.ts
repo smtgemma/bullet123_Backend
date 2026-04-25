@@ -35,7 +35,7 @@ const verifyOTP = catchAsync(async (req, res) => {
     return res.status(400).json({ message: "OTP is required" });
   }
 
-  const result = await AuthService.verifyOTP(email, otp);
+  const result = await AuthService.verifyOTP(email, otp, req.ip);
 
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,

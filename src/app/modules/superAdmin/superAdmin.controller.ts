@@ -5,28 +5,90 @@ import sendResponse from "../../utils/sendResponse";
 import { SuperAdminService } from "./superAdmin.service";
 
 const getDashboardStats = catchAsync(async (req: Request, res: Response) => {
-  const result = await SuperAdminService.getDashboardStats();
+   const result = await SuperAdminService.getDashboardStats();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
-   
+
     message: "Dashboard stats retrieved successfully",
     data: result,
   });
 });
 
 const getRecentActivities = catchAsync(async (req: Request, res: Response) => {
-  const result = await SuperAdminService.getRecentActivities();
+   const result = await SuperAdminService.getRecentActivities();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
-
     message: "Recent activities retrieved successfully",
     data: result,
   });
 });
 
+const updateUserBlocked = catchAsync(async (req: Request, res: Response) => {
+   const { id } = req.params;
+   const blockReason = req.body.blockReason;
+   const result = await SuperAdminService.updateUserBlocked(
+      id as string,
+      blockReason as string,
+   );
+
+   sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: `User ${result.isBlocked ? "blocked" : "unblocked"} successfully`,
+      data: result,
+   });
+});
+
+const getComplianceLogs = catchAsync(async (req: Request, res: Response) => {
+  const result = await SuperAdminService.getComplianceLogs(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Compliance logs retrieved successfully",
+    data: result,
+  });
+});
+
+// --- Community Control ---
+
+const getAllCommunityPosts = catchAsync(async (req: Request, res: Response) => {
+  const result = await SuperAdminService.getAllCommunityPosts(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community posts retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const deleteCommunityPost = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await SuperAdminService.deleteCommunityPost(id as string);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community post deleted successfully",
+  });
+});
+
+const deleteCommunityAnswer = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await SuperAdminService.deleteCommunityAnswer(id as string);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community answer deleted successfully",
+  });
+});
+
 export const SuperAdminController = {
-  getDashboardStats,
-  getRecentActivities,
+   getDashboardStats,
+   getRecentActivities,
+   updateUserBlocked,
+   getComplianceLogs,
+   getAllCommunityPosts,
+   deleteCommunityPost,
+   deleteCommunityAnswer,
 };

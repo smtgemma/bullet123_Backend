@@ -16,13 +16,14 @@ model User {
   isVerified         Boolean         @default(false)
   role               UserRole        @default(USER)
   isSubscribed       Boolean         @default(false)
+  isBlocked          Boolean         @default(false)
+  blockReason        String?
   planExpiration     DateTime?
   lastActiveAt       DateTime?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   stripeCustomerId   String?
   isDeleted          Boolean         @default(false)
-  isBlocked          Boolean         @default(false)
   Notifications      Notification[]
   Profile            Profile?
   meetings           Meeting[]
@@ -41,6 +42,7 @@ model User {
   answers            Answer[]        @relation("UserAnswers")
   municipalityId     String?
   staffMunicipality  Municipality?   @relation(name: "StaffMunicipality", fields: [municipalityId], references: [id])
+  activityLogs       ActivityLog[]
 
   @@map("users")
 }
@@ -508,7 +510,10 @@ model ActivityLog {
   id        String   @id @default(uuid())
   action    String
   details   String
+  userId    String?
+  ipAddress String?
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@map("activity_logs")
 }
