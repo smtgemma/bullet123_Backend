@@ -7,9 +7,9 @@ const router = Router();
 
 router.get("/featured",auth(UserRole.ADMIN,UserRole.SUPER_ADMIN), PlanController.getAllFeaturedItems);
 router.get("/", PlanController.getAllPlans);
-router.get("/free", PlanController.getFreePlans);
-router.get("/premium", PlanController.getPremiumPlans);
-router.get("/gold", PlanController.getGoldPlans);
+router.get("/beginner", PlanController.getBeginnerPlans);
+router.get("/professional", PlanController.getProfessionalPlans);
+router.get("/non-profit", PlanController.getNonProfitPlans);
 router.get("/by-type", PlanController.getPlansByType); 
 router.get("/:planId", PlanController.getPlanById);
 

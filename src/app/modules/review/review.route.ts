@@ -12,6 +12,8 @@ router.get('/', ReviewController.getAllReviews);
 
 router.get('/professional/:professionalId', auth(), ReviewController.getReviewsByProfessional);
 
+router.get('/my-reviews', auth(), ReviewController.getMyReviews);
+
 router.get('/:id', auth(), ReviewController.getReviewById);
 
 router.patch('/:id', auth(), ReviewController.updateReview);

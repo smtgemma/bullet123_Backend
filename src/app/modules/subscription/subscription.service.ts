@@ -56,7 +56,7 @@ const createSubscription = async (userId: string, planId: string) => {
       },
     });
 
-    if (plan.planType === "FREE") {
+    if (plan.price === 0) {
 
 
       const subscription = await tx.subscription.create({
@@ -89,7 +89,7 @@ const createSubscription = async (userId: string, planId: string) => {
         },
       });
 
-      return { subscription, planType: "FREE", planDetails: plan };
+      return { subscription, planType: plan.planType, planDetails: plan };
     }
 
     if (!plan.priceId) {

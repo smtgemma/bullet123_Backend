@@ -9,8 +9,16 @@ let io: Server;
 export const initializeSocket = (server: HttpServer) => {
   io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: [
+        "http://localhost:4044",
+        "http://localhost:4000",
+        "http://localhost:4041",
+        "http://localhost:4042",
+        "http://localhost:4043",
+        config.url.frontend as string,
+      ],
       methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 

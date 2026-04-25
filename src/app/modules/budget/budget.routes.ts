@@ -9,33 +9,33 @@ const router = Router();
 
 router.post(
   "/create",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN,UserRole.SUPER_ADMIN),
   validateRequest(BudgetValidation.createBudgetValidationSchema),
   BudgetController.createBudget
 );
 
 router.get(
   "/property/:propertyId",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.INSPECTOR),
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.INSPECTOR),
   BudgetController.getBudgetsByProperty
 );
 
 router.get(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.INSPECTOR),
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.INSPECTOR),
   BudgetController.getSingleBudget
 );
 
 router.patch(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(BudgetValidation.updateBudgetValidationSchema),
   BudgetController.updateBudget
 );
 
 router.delete(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   BudgetController.deleteBudget
 );
 

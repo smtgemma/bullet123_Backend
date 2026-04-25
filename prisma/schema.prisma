@@ -22,6 +22,7 @@ model User {
   updatedAt          DateTime        @updatedAt
   stripeCustomerId   String?
   isDeleted          Boolean         @default(false)
+  isBlocked          Boolean         @default(false)
   Notifications      Notification[]
   Profile            Profile?
   meetings           Meeting[]
@@ -76,7 +77,8 @@ model Plan {
   id                String             @id @default(uuid())
   planName          String             @unique
   price             Float
-  planType          PlanType           @default(FREE)
+  planType          PlanType           @default(BEGINNER)
+  category          PlanCategory       @default(INDIVIDUAL)
   currency          String             @default("USD")
   interval          Interval           @default(month)
   intervalCount     Int                @default(1)
@@ -418,12 +420,16 @@ enum FeaturedType {
   MARKETING
   BADGE
   SPOTLIGHT
+  SUPPORT
+  ANALYTICS
 }
 
 enum PlanType {
-  FREE
-  SILVER
-  GOLD
+  BEGINNER
+  PROFESSIONAL
+  NON_PROFIT
+  PROPERTY_OWNER
+  MUNICIPALITY
 }
 
 enum Interval {
@@ -432,8 +438,8 @@ enum Interval {
 }
 
 enum PlanCategory {
+  INDIVIDUAL
   ORGANIZATION
-  ARTIST
 }
 
 model SuccessStory {

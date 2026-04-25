@@ -29,7 +29,7 @@ interface CreatePlanPayload {
   discountEndDate?: Date;
 }
 
-interface UpdatePlanPayload extends Partial<CreatePlanPayload> {}
+interface UpdatePlanPayload extends Partial<CreatePlanPayload> { }
 
 const createPlan = async (payload: CreatePlanPayload) => {
 
@@ -76,19 +76,19 @@ const createPlan = async (payload: CreatePlanPayload) => {
           active: payload.active ?? true,
           description: payload?.description as string,
 
-           ...(payload.hasDiscount && payload.discountType && payload.discountValue
-      ? {
-          hasDiscount: true,
-          discountType: payload.discountType,
-          discountValue: payload.discountValue,
-          discountedPrice:
-            payload.discountType === "PERCENTAGE"
-              ? parseFloat((payload.price - (payload.price * payload.discountValue) / 100).toFixed(2))
-              : parseFloat(Math.max(0, payload.price - payload.discountValue).toFixed(2)),
-          discountStartDate: payload.discountStartDate || null,
-          discountEndDate: payload.discountEndDate || null,
-        }
-      : {}),
+          ...(payload.hasDiscount && payload.discountType && payload.discountValue
+            ? {
+              hasDiscount: true,
+              discountType: payload.discountType,
+              discountValue: payload.discountValue,
+              discountedPrice:
+                payload.discountType === "PERCENTAGE"
+                  ? parseFloat((payload.price - (payload.price * payload.discountValue) / 100).toFixed(2))
+                  : parseFloat(Math.max(0, payload.price - payload.discountValue).toFixed(2)),
+              discountStartDate: payload.discountStartDate || null,
+              discountEndDate: payload.discountEndDate || null,
+            }
+            : {}),
         },
       });
 
@@ -167,7 +167,7 @@ export const updatePlan = async (planId: string, payload: UpdatePlanPayload) => 
           active: payload.active ?? existingPlan.active ?? true,
           metadata: {
             planType: payload.planType ?? existingPlan.planType,
-          
+
           },
         });
 
@@ -200,38 +200,38 @@ export const updatePlan = async (planId: string, payload: UpdatePlanPayload) => 
 
 
     if (payload.hasDiscount !== undefined) {
-  if (payload.hasDiscount && payload.discountType && payload.discountValue) {
-    const basePrice = payload.price ?? existingPlan.price;
+      if (payload.hasDiscount && payload.discountType && payload.discountValue) {
+        const basePrice = payload.price ?? existingPlan.price;
 
-    if (payload.discountType === "PERCENTAGE" && payload.discountValue > 100) {
-      throw new AppError(status.BAD_REQUEST, "Percentage discount cannot exceed 100%");
+        if (payload.discountType === "PERCENTAGE" && payload.discountValue > 100) {
+          throw new AppError(status.BAD_REQUEST, "Percentage discount cannot exceed 100%");
+        }
+        if (payload.discountType === "FIXED_AMOUNT" && payload.discountValue >= basePrice) {
+          throw new AppError(status.BAD_REQUEST, "Fixed discount cannot exceed plan price");
+        }
+
+        const discountedPrice =
+          payload.discountType === "PERCENTAGE"
+            ? parseFloat((basePrice - (basePrice * payload.discountValue) / 100).toFixed(2))
+            : parseFloat(Math.max(0, basePrice - payload.discountValue).toFixed(2));
+
+        updateData.hasDiscount = true;
+        updateData.discountType = payload.discountType;
+        updateData.discountValue = payload.discountValue;
+        updateData.discountedPrice = discountedPrice;
+        updateData.discountStartDate = payload.discountStartDate || null;
+        updateData.discountEndDate = payload.discountEndDate || null;
+
+      } else if (!payload.hasDiscount) {
+
+        updateData.hasDiscount = false;
+        updateData.discountType = null;
+        updateData.discountValue = null;
+        updateData.discountedPrice = null;
+        updateData.discountStartDate = null;
+        updateData.discountEndDate = null;
+      }
     }
-    if (payload.discountType === "FIXED_AMOUNT" && payload.discountValue >= basePrice) {
-      throw new AppError(status.BAD_REQUEST, "Fixed discount cannot exceed plan price");
-    }
-
-    const discountedPrice =
-      payload.discountType === "PERCENTAGE"
-        ? parseFloat((basePrice - (basePrice * payload.discountValue) / 100).toFixed(2))
-        : parseFloat(Math.max(0, basePrice - payload.discountValue).toFixed(2));
-
-    updateData.hasDiscount = true;
-    updateData.discountType = payload.discountType;
-    updateData.discountValue = payload.discountValue;
-    updateData.discountedPrice = discountedPrice;
-    updateData.discountStartDate = payload.discountStartDate || null;
-    updateData.discountEndDate = payload.discountEndDate || null;
-
-  } else if (!payload.hasDiscount) {
-  
-    updateData.hasDiscount = false;
-    updateData.discountType = null;
-    updateData.discountValue = null;
-    updateData.discountedPrice = null;
-    updateData.discountStartDate = null;
-    updateData.discountEndDate = null;
-  }
-}
 
 
     if (
@@ -278,7 +278,7 @@ export const updatePlan = async (planId: string, payload: UpdatePlanPayload) => 
 
 
     if (pricingChanged) {
-  
+
       console.log("Changes:", changeDetails.join(", "));
 
       const finalPrice = payload.price !== undefined ? Number(payload.price) : currentPrice;
@@ -303,10 +303,10 @@ export const updatePlan = async (planId: string, payload: UpdatePlanPayload) => 
       if (oldPriceId) {
         try {
           await stripe.prices.update(oldPriceId, { active: false });
-         
+
         } catch (err: any) {
           if (err.code === "resource_missing") {
-            console.warn(`⚠️ Old price ${oldPriceId} not found in Stripe`);
+            console.warn(` Old price ${oldPriceId} not found in Stripe`);
           } else {
             throw err;
           }
@@ -314,7 +314,7 @@ export const updatePlan = async (planId: string, payload: UpdatePlanPayload) => 
       }
     } else {
       newPriceId = existingPlan.priceId;
-      console.log("✅ NO PRICING CHANGES - Keeping existing price:", newPriceId);
+      console.log(" NO PRICING CHANGES - Keeping existing price:", newPriceId);
     }
 
     updateData.priceId = newPriceId;
@@ -435,16 +435,16 @@ const getPlansByType = async (planType: PlanType) => {
   return plans;
 };
 
-const getFreePlans = async () => {
-  return getPlansByType(PlanType.FREE);
+const getBeginnerPlans = async () => {
+  return getPlansByType(PlanType.BEGINNER);
 };
 
-const getPremiumPlans = async () => {
-  return getPlansByType(PlanType.SILVER);
+const getProfessionalPlans = async () => {
+  return getPlansByType(PlanType.PROFESSIONAL);
 };
 
-const getGoldPlans = async () => {
-  return getPlansByType(PlanType.GOLD);
+const getNonProfitPlans = async () => {
+  return getPlansByType(PlanType.NON_PROFIT);
 };
 
 const deletePlan = async (planId: string) => {
@@ -602,9 +602,9 @@ export const PlanServices = {
   getAllPlans,
   getPlanById,
   getPlansByType,
-  getFreePlans,
-  getPremiumPlans,
-  getGoldPlans,
+  getBeginnerPlans,
+  getProfessionalPlans,
+  getNonProfitPlans,
   deletePlan,
   updatePlan,
   getAllFeaturedItems,

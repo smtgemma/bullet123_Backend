@@ -81,6 +81,24 @@ const getReviewsByProfessional = async (professionalId: string) => {
   return reviews;
 };
 
+const getMyReviewsFromDB = async (userId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: { professionalId: userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      reviewer: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profilePic: true,
+        },
+      },
+    },
+  });
+  return reviews;
+};
+
 const updateReview = async (id: string, payload: { rating?: number; comment?: string }) => {
   const review = await prisma.review.update({
     where: { id },
@@ -103,4 +121,5 @@ export const ReviewServices = {
   getReviewsByProfessional,
   updateReview,
   deleteReview,
+  getMyReviewsFromDB,
 };

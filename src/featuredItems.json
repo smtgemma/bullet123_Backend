@@ -1,63 +1,159 @@
 {
   "featuredItems": [
     {
-      "name": "Artwork Slots",
-      "key": "artwork_slots",
-      "type": "LIMIT",
-      "active": true
-    },
-    {
-      "name": "Storage Limit",
-      "key": "storage_limit",
-      "type": "STORAGE",
-      "active": true
-    },
-    {
-      "name": "Draft Mode Only",
-      "key": "draft_mode_only",
+      "name": "Individual profile page",
+      "key": "individual_profile_page",
       "type": "PROFILE",
       "active": true
     },
     {
-      "name": "Public Live Profile",
-      "key": "public_live_profile",
+      "name": "Receive direct messages",
+      "key": "receive_direct_messages",
       "type": "PROFILE",
       "active": true
     },
     {
-      "name": "Personal Dashboard Access",
-      "key": "personal_dashboard",
-      "type": "PROFILE",
-      "active": true
-    },
-    {
-      "name": "SEO-Optimized Gallery",
-      "key": "seo_gallery",
-      "type": "GALLERY",
-      "active": true
-    },
-    {
-      "name": "Newsletter Eligibility",
-      "key": "newsletter_eligibility",
+      "name": "Basic listing visibility",
+      "key": "basic_listing_visibility",
       "type": "MARKETING",
       "active": true
     },
     {
-      "name": "Featured Artist Badge",
-      "key": "featured_artist_badge",
-      "type": "BADGE",
+      "name": "Standard email support",
+      "key": "standard_email_support",
+      "type": "SUPPORT",
       "active": true
     },
     {
-      "name": "Homepage Artist Spotlight",
-      "key": "homepage_spotlight",
-      "type": "SPOTLIGHT",
+      "name": "Featured profile placement",
+      "key": "featured_profile_placement",
+      "type": "PROFILE",
       "active": true
     },
-     {
-      "name": "File Size Limit",
-      "key": "file_size_limit",
+    {
+      "name": "Advanced lead generation",
+      "key": "advanced_lead_generation",
+      "type": "MARKETING",
+      "active": true
+    },
+    {
+      "name": "Custom branding options",
+      "key": "custom_branding_options",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Analytics dashboard",
+      "key": "analytics_dashboard",
+      "type": "ANALYTICS",
+      "active": true
+    },
+    {
+      "name": "Unlimited internal office team members",
+      "key": "unlimited_team_members",
+      "type": "LIMIT",
+      "active": true
+    },
+    {
+      "name": "Internal messaging & coordination",
+      "key": "internal_messaging",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Property-first workflow",
+      "key": "property_workflow",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Role-based permissions",
+      "key": "role_permissions",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Secure public access link",
+      "key": "secure_public_access",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Audit logs & compliance tracking",
+      "key": "audit_logs",
       "type": "STORAGE",
+      "active": true
+    },
+    {
+      "name": "Priority support",
+      "key": "priority_support",
+      "type": "SUPPORT",
+      "active": true
+    },
+    {
+      "name": "Advanced portfolio tracking",
+      "key": "portfolio_tracking",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Multi-property performance dashboard",
+      "key": "multi_property_dashboard",
+      "type": "ANALYTICS",
+      "active": true
+    },
+    {
+      "name": "Investment analytics view",
+      "key": "investment_analytics",
+      "type": "ANALYTICS",
+      "active": true
+    },
+    {
+      "name": "Branded reporting",
+      "key": "branded_reporting",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Cross-department collaboration",
+      "key": "cross_department_collaboration",
+      "type": "PROFILE",
+      "active": true
+    },
+    {
+      "name": "Economic impact measurement tools",
+      "key": "economic_impact_tools",
+      "type": "ANALYTICS",
+      "active": true
+    },
+    {
+      "name": "Vacancy loss tracking",
+      "key": "vacancy_loss_tracking",
+      "type": "STORAGE",
+      "active": true
+    },
+    {
+      "name": "Public reporting dashboard",
+      "key": "public_reporting_dashboard",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Grant & HUD export tools",
+      "key": "grant_hud_tools",
+      "type": "GALLERY",
+      "active": true
+    },
+    {
+      "name": "Dedicated onboarding",
+      "key": "dedicated_onboarding",
+      "type": "SUPPORT",
+      "active": true
+    },
+    {
+      "name": "Full reporting engine",
+      "key": "full_reporting_engine",
+      "type": "ANALYTICS",
       "active": true
     }
   ]

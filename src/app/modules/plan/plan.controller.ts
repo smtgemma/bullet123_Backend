@@ -76,29 +76,29 @@ const getPlansByType = catchAsync(async (req, res) => {
   });
 });
 
-const getFreePlans = catchAsync(async (req, res) => {
-  const result = await PlanServices.getFreePlans();
+const getBeginnerPlans = catchAsync(async (req, res) => {
+  const result = await PlanServices.getBeginnerPlans();
   sendResponse(res, {
     statusCode: status.OK,
-    message: "Free plans retrieved successfully",
+    message: "Beginner plans retrieved successfully",
     data: result,
   });
 });
 
-const getPremiumPlans = catchAsync(async (req, res) => {
-  const result = await PlanServices.getPremiumPlans();
+const getProfessionalPlans = catchAsync(async (req, res) => {
+  const result = await PlanServices.getProfessionalPlans();
   sendResponse(res, {
     statusCode: status.OK,
-    message: "Premium plans retrieved successfully",
+    message: "Professional plans retrieved successfully",
     data: result,
   });
 });
 
-const getGoldPlans = catchAsync(async (req, res) => {
-  const result = await PlanServices.getGoldPlans();
+const getNonProfitPlans = catchAsync(async (req, res) => {
+  const result = await PlanServices.getNonProfitPlans();
   sendResponse(res, {
     statusCode: status.OK,
-    message: "Gold plans retrieved successfully",
+    message: "Non-profit plans retrieved successfully",
     data: result,
   });
 });
@@ -152,9 +152,9 @@ export const PlanController = {
   getPlanById,
   deletePlan,
   getPlansByType,
-  getFreePlans,
-  getPremiumPlans,
-  getGoldPlans,
+  getBeginnerPlans,
+  getProfessionalPlans,
+  getNonProfitPlans,
   getAllFeaturedItems,
   setDiscount,
   removeDiscount

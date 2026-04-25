@@ -40,6 +40,16 @@ const getReviewsByProfessional = catchAsync(async (req, res) => {
   res.status(status.OK).json({ success: true, data: reviews });
 });
 
+const getMyReviews = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
+  const result = await ReviewServices.getMyReviewsFromDB(userId as string);
+  res.status(status.OK).json({
+    success: true,
+    message: "Reviews retrieved successfully",
+    data: result,
+  });
+});
+
 // Update Review
 const updateReview = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -62,4 +72,5 @@ export const ReviewController = {
   getReviewsByProfessional,
   updateReview,
   deleteReview,
+  getMyReviews,
 };

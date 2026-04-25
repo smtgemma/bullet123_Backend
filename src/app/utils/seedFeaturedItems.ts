@@ -6,15 +6,7 @@ export const seedFeaturedItems = async () => {
   try {
     console.log(" Starting Featured Items seed...");
 
-    const existingCount = await prisma.featuredItem.count();
-
-    if (existingCount > 0) {
-      console.log(
-        ` Featured items already exist (${existingCount} items). Skipping seed.`
-      );
-      return;
-    }
-const jsonPath = path.resolve(__dirname, "..", "..", "featuredItems.json");
+    const jsonPath = path.resolve(__dirname, "..", "..", "featuredItems.json");
 
     if (!fs.existsSync(jsonPath)) {
       console.log("featuredItems.json not found. Skipping seed.");
@@ -31,9 +23,17 @@ const jsonPath = path.resolve(__dirname, "..", "..", "featuredItems.json");
     }
 
     let createdCount = 0;
+    let updatedCount = 0;
+
     for (const item of data.featuredItems) {
-      await prisma.featuredItem.create({
-        data: {
+      await prisma.featuredItem.upsert({
+        where: { key: item.key },
+        update: {
+          name: item.name,
+          type: item.type,
+          active: item.active ?? true,
+        },
+        create: {
           name: item.name,
           key: item.key,
           type: item.type,
@@ -44,7 +44,7 @@ const jsonPath = path.resolve(__dirname, "..", "..", "featuredItems.json");
     }
 
     console.log(
-      `Featured items seeded successfully! (${createdCount} items created)`
+      `Featured items seeded successfully! (${createdCount} items processed)`
     );
   } catch (error) {
     console.error("Error seeding featured items:", error);
