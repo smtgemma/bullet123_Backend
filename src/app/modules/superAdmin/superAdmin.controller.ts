@@ -50,9 +50,45 @@ const getComplianceLogs = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// --- Community Control ---
+
+const getAllCommunityPosts = catchAsync(async (req: Request, res: Response) => {
+  const result = await SuperAdminService.getAllCommunityPosts(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community posts retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const deleteCommunityPost = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await SuperAdminService.deleteCommunityPost(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community post deleted successfully",
+  });
+});
+
+const deleteCommunityAnswer = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await SuperAdminService.deleteCommunityAnswer(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: "Community answer deleted successfully",
+  });
+});
+
 export const SuperAdminController = {
    getDashboardStats,
    getRecentActivities,
    updateUserBlocked,
-   getComplianceLogs
+   getComplianceLogs,
+   getAllCommunityPosts,
+   deleteCommunityPost,
+   deleteCommunityAnswer,
 };

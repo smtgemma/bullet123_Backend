@@ -159,10 +159,96 @@ const logActivity = async (payload: { action: string; details: string; userId?: 
   });
 };
 
+// --- Community Control ---
+
+const getAllCommunityPosts = async (query: Record<string, unknown>) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = {};
+
+  if (query.search) {
+    where.OR = [
+      { title: { contains: query.search as string, mode: "insensitive" } },
+      { details: { contains: query.search as string, mode: "insensitive" } },
+      { category: { contains: query.search as string, mode: "insensitive" } },
+    ];
+  }
+
+  const [total, posts] = await Promise.all([
+    prisma.question.count({ where }),
+    prisma.question.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePic: true,
+            role: true,
+          },
+        },
+        _count: {
+          select: { answers: true },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+    data: posts,
+  };
+};
+
+const deleteCommunityPost = async (id: string) => {
+  const post = await prisma.question.findUnique({ where: { id } });
+  if (!post) throw new Error("Community post not found");
+
+  await prisma.question.delete({ where: { id } });
+
+  await logActivity({
+    action: "Community Post Deleted",
+    details: `Super admin deleted community post: "${post.title}"`,
+  });
+
+  return true;
+};
+
+const deleteCommunityAnswer = async (id: string) => {
+  const answer = await prisma.answer.findUnique({
+    where: { id },
+    include: { question: { select: { title: true } } },
+  });
+  if (!answer) throw new Error("Community answer not found");
+
+  await prisma.answer.delete({ where: { id } });
+
+  await logActivity({
+    action: "Community Answer Deleted",
+    details: `Super admin deleted an answer on post: "${answer.question.title}"`,
+  });
+
+  return true;
+};
+
 export const SuperAdminService = {
   getDashboardStats,
   getRecentActivities,
   getComplianceLogs,
   logActivity,
-  updateUserBlocked
+  updateUserBlocked,
+  getAllCommunityPosts,
+  deleteCommunityPost,
+  deleteCommunityAnswer,
 };

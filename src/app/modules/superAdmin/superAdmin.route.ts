@@ -29,4 +29,24 @@ router.get(
   SuperAdminController.getComplianceLogs
 );
 
+// --- Community Control ---
+
+router.get(
+  "/community/posts",
+  auth(UserRole.SUPER_ADMIN),
+  SuperAdminController.getAllCommunityPosts
+);
+
+router.delete(
+  "/community/posts/:id",
+  auth(UserRole.SUPER_ADMIN),
+  SuperAdminController.deleteCommunityPost
+);
+
+router.delete(
+  "/community/answers/:id",
+  auth(UserRole.SUPER_ADMIN),
+  SuperAdminController.deleteCommunityAnswer
+);
+
 export const SuperAdminRoutes = router;
