@@ -193,6 +193,25 @@ const getAllCommunityPosts = async (query: Record<string, unknown>) => {
             role: true,
           },
         },
+        answers: {
+          select: {
+            id: true,
+            content: true,
+            upvotes: true,
+            isAccepted: true,
+            createdAt: true,
+            author: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                profilePic: true,
+                role: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
         _count: {
           select: { answers: true },
         },
@@ -205,7 +224,7 @@ const getAllCommunityPosts = async (query: Record<string, unknown>) => {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPage: Math.ceil(total / limit),
     },
     data: posts,
   };

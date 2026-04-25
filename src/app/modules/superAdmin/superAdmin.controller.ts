@@ -65,7 +65,7 @@ const getAllCommunityPosts = catchAsync(async (req: Request, res: Response) => {
 
 const deleteCommunityPost = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  await SuperAdminService.deleteCommunityPost(id);
+  await SuperAdminService.deleteCommunityPost(id as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -75,7 +75,7 @@ const deleteCommunityPost = catchAsync(async (req: Request, res: Response) => {
 
 const deleteCommunityAnswer = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  await SuperAdminService.deleteCommunityAnswer(id);
+  await SuperAdminService.deleteCommunityAnswer(id as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
