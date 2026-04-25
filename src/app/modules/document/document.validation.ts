@@ -8,6 +8,7 @@ const createDocumentValidationSchema = z.object({
     fileSize: z.string().optional(),
     isSigningRequired: z.boolean().optional(),
     signatoryId: z.string().optional(),
+    signatoryName: z.string().optional(),
     propertyId: z.string({ required_error: "Property ID is required" }),
   }),
 });
@@ -18,6 +19,7 @@ const updateDocumentValidationSchema = z.object({
     type: z.string().optional(),
     isSigningRequired: z.boolean().optional(),
     signatoryId: z.string().optional(),
+    signatoryName: z.string().optional(),
     signedAt: z.string().optional(),
   }),
 });

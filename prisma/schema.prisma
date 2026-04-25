@@ -285,6 +285,7 @@ model Document {
 
   isSigningRequired Boolean   @default(false)
   signatoryId       String?
+  signatoryName     String?
   signatory         User?     @relation("SignatoryUser", fields: [signatoryId], references: [id])
   signedAt          DateTime?
 
