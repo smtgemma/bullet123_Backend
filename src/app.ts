@@ -1,4 +1,3 @@
-
 import cors from "cors";
 import path from "path";
 
@@ -8,12 +7,21 @@ import notFound from "./app/middlewares/notFound";
 import express, { Application, Request, Response } from "express";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 
-
-
-
 const app: Application = express();
 
-app.use(cors({ origin: ["http://localhost:4044", "http://localhost:4000", "http://localhost:4041", "http://localhost:4042", "http://localhost:4043"], credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:4044",
+      "http://localhost:4000",
+      "http://localhost:4041",
+      "http://localhost:4042",
+      "http://localhost:4043",
+      "http://187.124.93.15:4044"
+    ],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -33,7 +41,6 @@ app.get("/", async (req: Request, res: Response) => {
 
 app.use(globalErrorHandler);
 app.use(notFound);
-
 
 export default app;
 //

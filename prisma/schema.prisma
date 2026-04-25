@@ -24,7 +24,6 @@ model User {
   updatedAt          DateTime        @updatedAt
   stripeCustomerId   String?
   isDeleted          Boolean         @default(false)
-  isBlocked          Boolean         @default(false)
   Notifications      Notification[]
   Profile            Profile?
   meetings           Meeting[]
