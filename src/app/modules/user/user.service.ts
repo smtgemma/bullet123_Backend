@@ -403,6 +403,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
       select: {
         assignedProperties: true,
         receivedReviews: true,
+        successStories: true,
       }
     }
   };
@@ -415,11 +416,6 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
     .fields()
     .include(include);
 
-  // Filter only professionals (by Roles) and not deleted
-  // If the frontend passed a specific role e.g. ?role=CONTRACTOR, QueryBuilder handles it via filter()
-  // Otherwise default to including all professional roles:
-  const allowedRoles = ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER", "ADMIN", "MUNICIPALITY", "STAFF", "SUPER_ADMIN", "COMMUNITY_PARTNER", "BUYER", "SELLER"];
-  
   const rawFilterInput: any = { isDeleted: false };
   if (!query.role) {
      rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
@@ -431,7 +427,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
   const meta = await queryBuilder.countTotal();
 
   const data = result.map((user: any) => {
-    const { password, ...rest } = user;
+    const { password, Profile, ...rest } = user;
     
     // Calculate average rating
     const reviews = user.receivedReviews || [];
@@ -440,9 +436,17 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
 
     return {
       ...rest,
-      projectsCompleted: user._count?.assignedProperties || 0,
+      // Flatten Profile fields to top-level for easy frontend access
+      location: Profile?.location || null,
+      bio: Profile?.bio || null,
+      phone: Profile?.phone || null,
+      website: Profile?.website || null,
+      birthDate: Profile?.birthDate || null,
+      Profile,
+      // Stats
+      projectsCompleted: user._count?.successStories || 0,
       totalReviews: user._count?.receivedReviews || 0,
-      averageRating: parseFloat(avgRating as string)
+      averageRating: parseFloat(avgRating as string),
     };
   });
 
