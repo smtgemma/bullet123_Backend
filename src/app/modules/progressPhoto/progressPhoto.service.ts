@@ -1,14 +1,15 @@
 import prisma from "../../utils/prisma";
 import { IProgressPhoto } from "./progressPhoto.interface";
 
-const uploadProgressPhotoIntoDB = async (payload: { propertyId: string; urls: string[]; uploaderId: string }) => {
-  const { propertyId, urls, uploaderId } = payload;
+const uploadProgressPhotoIntoDB = async (payload: { propertyId: string; urls: string[]; description: string; uploaderId: string }) => {
+  const { propertyId, urls, uploaderId, description } = payload;
 
   const results = await prisma.$transaction(
     urls.map((url) =>
       prisma.progressPhoto.create({
         data: {
           url,
+          description,
           propertyId,
           uploaderId,
         },
