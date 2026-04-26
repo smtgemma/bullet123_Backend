@@ -564,7 +564,7 @@ const resetPassword = async (
 
 // ── Get Me ─────────────────────────────────────────────────────────────────
 const getMe = async (email: string) => {
-  const result = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email },
     select: {
       id: true,
@@ -615,7 +615,44 @@ const getMe = async (email: string) => {
     },
   });
 
-  return result;
+  if (!user) return null;
+
+  // ── Property Portfolio Dynamic Stats ──────────────────────────────────────
+  // Determine filter based on role: Municipality sees their own, others see assigned
+  const propertyFilter: any =
+    user.role === "MUNICIPALITY" && user.Municipality
+      ? { municipalityId: user.Municipality.id }
+      : { assignedStaff: { some: { id: user.id } } };
+
+  const [totalAssets, activeProperties, completedProjects, portfolioStats] =
+    await Promise.all([
+      prisma.propertyInfo.count({ where: propertyFilter }),
+      prisma.propertyInfo.count({
+        where: {
+          ...propertyFilter,
+          vacancyStatus: { in: ["VACANT", "UNDER_CONTRACT"] },
+        },
+      }),
+      prisma.propertyInfo.count({
+        where: {
+          ...propertyFilter,
+          vacancyStatus: { in: ["CLOSED", "COMPLETED"] },
+        },
+      }),
+      prisma.propertyInfo.aggregate({
+        where: propertyFilter,
+        _sum: { askingPrice: true },
+      }),
+    ]);
+
+  const propertyPortfolio = {
+    totalManagedAssets: totalAssets || 0,
+    activeProperties: activeProperties || 0,
+    completedProjects: completedProjects || 0,
+    portfolioValue: portfolioStats._sum.askingPrice || 0,
+  };
+
+  return { ...user, propertyPortfolio };
 };
 
 // ── Refresh Token ──────────────────────────────────────────────────────────
