@@ -17,6 +17,10 @@ const createSuccessStory = async (payload: Partial<SuccessStory> & { userId: str
       description: payload.description,
       beforeImages: payload.beforeImages || [],
       afterImages: payload.afterImages || [],
+      projectCategory: payload.projectCategory || null,
+      completedDate: payload.completedDate ? new Date(payload.completedDate as any) : null,
+      duration: payload.duration || null,
+      roi: payload.roi || null,
       userId: payload.userId,
     },
   });
