@@ -4,6 +4,13 @@ import * as path from "path";
 
 export const seedFeaturedItems = async () => {
   try {
+    // Check if already seeded — only run once on first startup
+    const existingCount = await prisma.featuredItem.count();
+    if (existingCount > 0) {
+      console.log(`⏭️  Featured items already seeded (${existingCount} items found). Skipping.`);
+      return;
+    }
+
     console.log(" Starting Featured Items seed...");
 
     const jsonPath = path.resolve(__dirname, "..", "..", "featuredItems.json");
@@ -23,17 +30,10 @@ export const seedFeaturedItems = async () => {
     }
 
     let createdCount = 0;
-    let updatedCount = 0;
 
     for (const item of data.featuredItems) {
-      await prisma.featuredItem.upsert({
-        where: { key: item.key },
-        update: {
-          name: item.name,
-          type: item.type,
-          active: item.active ?? true,
-        },
-        create: {
+      await prisma.featuredItem.create({
+        data: {
           name: item.name,
           key: item.key,
           type: item.type,
@@ -44,7 +44,7 @@ export const seedFeaturedItems = async () => {
     }
 
     console.log(
-      `Featured items seeded successfully! (${createdCount} items processed)`
+      `✅ Featured items seeded successfully! (${createdCount} items created)`
     );
   } catch (error) {
     console.error("Error seeding featured items:", error);

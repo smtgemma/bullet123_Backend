@@ -414,7 +414,12 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
     }
   };
 
-  const queryBuilder = new QueryBuilder(prisma.user, query)
+  // Strip 'role' from the query before passing to QueryBuilder.
+  // Role is a Prisma enum — it does NOT support `contains`/`mode:insensitive`.
+  // We handle it manually below via rawFilter with an exact `equals` match.
+  const { role, ...restQuery } = query;
+
+  const queryBuilder = new QueryBuilder(prisma.user, restQuery)
     .search(["fullName", "email"])
     .filter()
     .sort()
@@ -423,8 +428,13 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
     .include(include);
 
   const rawFilterInput: any = { isDeleted: false };
-  if (!query.role) {
-     rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
+
+  if (role) {
+    // Exact enum match — no contains/insensitive
+    rawFilterInput.role = role as string;
+  } else {
+    // Default: return all professional roles
+    rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
   }
 
   queryBuilder.rawFilter(rawFilterInput);
