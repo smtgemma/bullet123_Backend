@@ -18,7 +18,7 @@ router.post("/resend-otp", AuthController.resendEmailVerificationOtp);
 router.post(
   "/login",
   validateRequest(AuthValidation.loginValidationSchema),
-  AuthController.login
+  AuthController.login,
 );
 
 router.get("/me", auth(), AuthController.getMe);
@@ -28,27 +28,28 @@ router.post("/refresh-token", AuthController.refreshToken);
 // ── Password ───────────────────────────────────────────────────────────────
 router.put(
   "/change-password",
-  auth(UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(),
   validateRequest(AuthValidation.changePasswordValidationSchema),
-  AuthController.changePassword
+  AuthController.changePassword,
 );
 
 router.post(
   "/forgot-password",
   validateRequest(AuthValidation.forgotPasswordValidationSchema),
-  AuthController.forgotPassword
+  AuthController.forgotPassword,
 );
-
-
-
-router.post("/verify-reset-password-otp", AuthController.verifyResetPasswordOTP);
-
-router.post("/resend-reset-password-otp", AuthController.resendResetPasswordOtp);
 
 router.post(
-  "/resend-reset-otp",
+  "/verify-reset-password-otp",
+  AuthController.verifyResetPasswordOTP,
+);
+
+router.post(
+  "/resend-reset-password-otp",
   AuthController.resendResetPasswordOtp,
 );
+
+router.post("/resend-reset-otp", AuthController.resendResetPasswordOtp);
 
 router.post(
   "/create-staff",
@@ -56,10 +57,7 @@ router.post(
   AuthController.createStaffAccount,
 );
 
-router.post(
-  "/setup-password",
-  AuthController.setupPassword,
-);
+router.post("/setup-password", AuthController.setupPassword);
 
 router.post("/reset-password", AuthController.resetPassword);
 
