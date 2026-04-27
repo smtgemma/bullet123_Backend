@@ -9,28 +9,28 @@ const router = Router();
 
 router.post(
   "/create-subscription",
-  auth(UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(),
   validateRequest(SubscriptionValidation.SubscriptionValidationSchema),
   SubscriptionController.createSubscription
 );
 
 router.get(
   "/my-subscription",
-  auth(UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(),
   SubscriptionController.getMySubscription
 );
 
-router.get("/", auth( UserRole.ADMIN,UserRole.SUPER_ADMIN), SubscriptionController.getAllSubscription);
+router.get("/", auth( ), SubscriptionController.getAllSubscription);
 
 router.get(
   "/:subscriptionId",
-  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(),
   SubscriptionController.getSingleSubscription
 );
 
 router.put(
   "/:subscriptionId",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  auth(),
   SubscriptionController.updateSubscription
 );
 
@@ -42,13 +42,13 @@ router.delete(
 
 router.post(
   "/:subscriptionId/cancel",
-  auth(UserRole.USER),
+  auth(),
   SubscriptionController.cancelSubscription
 );
 
 router.post(
   "/:subscriptionId/reactivate",
-  auth(UserRole.USER),
+  auth(),
   SubscriptionController.reactivateSubscription
 );
 

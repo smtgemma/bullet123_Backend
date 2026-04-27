@@ -204,8 +204,8 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
         select: {
           id: true,
           bio: true,
-          location: true,  
-          phone: true,      
+          location: true,
+          phone: true,
           website: true,
           birthDate: true,
           experience: true,
@@ -401,6 +401,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
             fullName: true,
             profilePic: true,
           }
+
         }
       },
       orderBy: { createdAt: "desc" as const }
@@ -414,12 +415,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
     }
   };
 
-  // Strip 'role' from the query before passing to QueryBuilder.
-  // Role is a Prisma enum — it does NOT support `contains`/`mode:insensitive`.
-  // We handle it manually below via rawFilter with an exact `equals` match.
-  const { role, ...restQuery } = query;
-
-  const queryBuilder = new QueryBuilder(prisma.user, restQuery)
+  const queryBuilder = new QueryBuilder(prisma.user, query)
     .search(["fullName", "email"])
     .filter()
     .sort()
@@ -428,12 +424,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
     .include(include);
 
   const rawFilterInput: any = { isDeleted: false };
-
-  if (role) {
-    // Exact enum match — no contains/insensitive
-    rawFilterInput.role = role as string;
-  } else {
-    // Default: return all professional roles
+  if (!query.role) {
     rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
   }
 
@@ -444,7 +435,7 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
 
   const data = result.map((user: any) => {
     const { password, Profile, ...rest } = user;
-    
+
     // Calculate average rating
     const reviews = user.receivedReviews || [];
     const totalRating = reviews.reduce((sum: number, r: any) => sum + r.rating, 0);
