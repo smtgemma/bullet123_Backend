@@ -31,6 +31,9 @@ const updateUserValidationSchema = z.object({
         invalid_type_error: "Username must be a string.",
       })
       .optional(),
+    experience: z.string().optional(),
+    specialization: z.array(z.string()).optional(),
+    certification: z.array(z.string()).optional(),
   }),
 });
 

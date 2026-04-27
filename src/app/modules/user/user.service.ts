@@ -176,6 +176,9 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
   if (payload?.location) profileData.location = payload.location;
   if (payload?.phone) profileData.phone = payload.phone;
   if (payload?.website) profileData.website = payload.website;
+  if (payload?.experience) profileData.experience = payload.experience;
+  if (payload?.specialization) profileData.specialization = payload.specialization;
+  if (payload?.certification) profileData.certification = payload.certification;
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -205,6 +208,9 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
           phone: true,      
           website: true,
           birthDate: true,
+          experience: true,
+          specialization: true,
+          certification: true,
         },
       },
     },
@@ -453,6 +459,69 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
   return { meta, data };
 };
 
+const getSingleProfessionalFromDB = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId, isDeleted: false },
+    include: {
+      Profile: true,
+      receivedReviews: {
+        include: {
+          reviewer: {
+            select: {
+              id: true,
+              fullName: true,
+              profilePic: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" as const },
+      },
+      _count: {
+        select: {
+          assignedProperties: true,
+          receivedReviews: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(status.NOT_FOUND, "Professional not found!");
+  }
+
+  const { password, ...rest } = user;
+
+  // Calculate dynamic success rate based on completed properties
+  const totalProjects = user._count?.assignedProperties || 0;
+  const completedProjects = await prisma.propertyInfo.count({
+    where: {
+      assignedStaff: { some: { id: userId } },
+      vacancyStatus: { in: ["COMPLETED", "CLOSED"] },
+    },
+  });
+
+  const successRateValue =
+    totalProjects > 0
+      ? Math.round((completedProjects / totalProjects) * 100)
+      : 0;
+
+  // Calculate average rating
+  const reviews = user.receivedReviews || [];
+  const totalRating = reviews.reduce(
+    (sum: number, r: any) => sum + r.rating,
+    0,
+  );
+  const avgRating =
+    reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+
+  return {
+    ...rest,
+    projectsCompleted: totalProjects,
+    totalReviews: user._count?.receivedReviews || 0,
+    averageRating: parseFloat(avgRating as string),
+    successRate: `${successRateValue}%`,
+  };
+};
 
 export const UserService = {
   getAllUserFromDB,
@@ -465,5 +534,6 @@ export const UserService = {
   getAllAdminFromDB,
   deleteMeFromDB,
   getAllUsersFromDB,
-  getProfessionalsFromDB
+  getProfessionalsFromDB,
+  getSingleProfessionalFromDB,
 };

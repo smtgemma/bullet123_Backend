@@ -136,6 +136,17 @@ const getProfessionals = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleProfessional = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await UserService.getSingleProfessionalFromDB(id as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Professional retrieved successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   getAllUser,
   updateUser,
@@ -146,5 +157,6 @@ export const UserController = {
   getAllAdminFromDB,
   deleteMe,
   getAllUsers,
-  getProfessionals
+  getProfessionals,
+  getSingleProfessional,
 };
