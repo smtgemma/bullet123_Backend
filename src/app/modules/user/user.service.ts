@@ -289,6 +289,8 @@ const deleteMeFromDB = async (userId: string, password: string) => {
 
   return null;
 };
+
+
 const chengeUserRoleIntoDB = async (userId: string, role: UserRole, performingUser?: any, ip?: string) => {
   const isUserExist = await prisma.user.findUnique({
     where: { id: userId },
