@@ -65,7 +65,7 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
 
   const queryBuilder = new QueryBuilder(prisma.propertyInfo, query)
     .search(["propertyAddress", "zone", "propertyType", "vacancyStatus"])
-    .filter()
+    .filter(["vacancyStatus"])
     .sort()
     .paginate()
     .fields()
@@ -81,6 +81,10 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
         }
       },
     });
+  
+  if (query.vacancyStatus) {
+    queryBuilder.rawFilter({ vacancyStatus: query.vacancyStatus });
+  }
 
 
   const result = await queryBuilder.execute();

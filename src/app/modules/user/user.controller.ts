@@ -16,6 +16,7 @@ const getAllUser = catchAsync(async (req, res) => {
     meta:result.meta
   });
 });
+
 const getAllAdminFromDB = catchAsync(async (req, res) => {
   const result = await UserService.getAllAdminFromDB(req.query);
 

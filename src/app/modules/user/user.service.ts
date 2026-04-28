@@ -25,7 +25,7 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
 
   const queryBuilder = new QueryBuilder(prisma.user, query)
     .search(["email", "fullName"])
-    .filter()
+    .filter(["role"])
     .sort()
     .paginate()
     .fields()
@@ -354,7 +354,7 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
 
   const queryBuilder = new QueryBuilder(prisma.user, query)
     .search(["email", "fullName"])
-    .filter()
+    .filter(["role"])
     .sort()
     .paginate()
     .fields()
@@ -362,6 +362,7 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
 
   queryBuilder.rawFilter({
     isDeleted: false,
+    ...(query.role ? { role: query.role } : {})
   });
 
   const result = await queryBuilder.execute();
@@ -419,14 +420,16 @@ const getProfessionalsFromDB = async (query: Record<string, unknown>) => {
 
   const queryBuilder = new QueryBuilder(prisma.user, query)
     .search(["fullName", "email"])
-    .filter()
+    .filter(["role"])
     .sort()
     .paginate()
     .fields()
     .include(include);
 
   const rawFilterInput: any = { isDeleted: false };
-  if (!query.role) {
+  if (query.role) {
+    rawFilterInput.role = query.role;
+  } else {
     rawFilterInput.role = { in: ["CONTRACTOR", "INSPECTOR", "REALTOR", "LENDER"] };
   }
 

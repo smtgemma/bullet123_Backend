@@ -23,7 +23,7 @@ class QueryBuilder {
   }
 
 
-  filter() {
+  filter(additionalExcludes: string[] = []) {
     const queryObj = JSON.parse(JSON.stringify(this.query));
     const excludeFields = [
       "searchTerm",
@@ -38,6 +38,7 @@ class QueryBuilder {
       "locationFields",
       "filterType",
       "tag",
+      ...additionalExcludes
     ];
     excludeFields.forEach((field) => delete queryObj[field]);
 
