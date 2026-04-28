@@ -19,6 +19,7 @@ import { SuccessStoryRoutes } from "../modules/successStory/successStory.route";
 import { QaRoutes } from "../modules/qa/qa.route";
 import { SuperAdminRoutes } from "../modules/superAdmin/superAdmin.route";
 import { imagesHostRoute } from "../utils/imagehost";
+import { NotificationsRoutes } from "../modules/Notifaction/notifaction.route";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ const moduleRoutes = [
     path: "/subscribers",
     route: subscriberRoutes,
   },
-{
+  {
     path: "/mettings",
     route: meetingRoutes,
   },
@@ -98,13 +99,17 @@ const moduleRoutes = [
     route: QaRoutes,
   },
   {
-    path:"/uploads",
-    route:imagesHostRoute
+    path: "/uploads",
+    route: imagesHostRoute,
   },
   {
     path: "/super-admin",
     route: SuperAdminRoutes,
-  }
+  },
+  {
+    path: "/notifications",
+    route: NotificationsRoutes,
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
