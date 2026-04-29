@@ -153,9 +153,24 @@ const imageStorage = multerS3({
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
-    const isPdf = file.mimetype === "application/pdf";
-    const folder = isPdf ? "uploads/pdfs" : "uploads/images";
-    const prefix = isPdf ? "pdf" : "img";
+    const mimetype = file.mimetype;
+    let folder = "uploads/others";
+    let prefix = "file";
+
+    if (mimetype === "application/pdf") {
+      folder = "uploads/pdfs";
+      prefix = "pdf";
+    } else if (mimetype.startsWith("image/")) {
+      folder = "uploads/images";
+      prefix = "img";
+    } else if (mimetype === "text/csv" || mimetype === "application/vnd.ms-excel" || mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      folder = "uploads/csv";
+      prefix = "csv";
+    } else if (mimetype === "application/msword" || mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      folder = "uploads/docs";
+      prefix = "doc";
+    }
+    
     const extension = file.originalname.split('.').pop();
     const filename = `${folder}/${prefix}_${Date.now()}_${Math.random().toString(36).substring(2)}.${extension}`;
     cb(null, filename);
@@ -210,15 +225,20 @@ const videoStorage = multerS3({
 export const imageUpload = multer({
   storage: imageStorage,
   limits: {
-    fileSize: 20 * 1024 * 1024, 
+    fileSize: 50 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "application/pdf"];
+    const allowedTypes = [
+      "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", 
+      "application/pdf",
+      "text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
     
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (JPEG, PNG, GIF, WebP) and PDF files are allowed") as unknown as null, false);
+      cb(new Error("Only images, PDF, CSV, and DOCS files are allowed") as unknown as null, false);
     }
   },
 });
