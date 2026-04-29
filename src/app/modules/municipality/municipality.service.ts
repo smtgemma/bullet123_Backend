@@ -4,6 +4,7 @@ import ApiError from "../../errors/AppError";
 import QueryBuilder from "../../builder/QueryBuilder";
 import { IMunicipalityUpdate } from "./municipality.interface";
 import prisma from "../../utils/prisma";
+import { UserRole } from "@prisma/client";
 
 
 
@@ -139,30 +140,59 @@ const deleteMunicipalityFromDB = async (id: string) => {
 
 // ── Get my Municipality Staffs ─────────────────────────────────────────────
 const getMyStaffsFromDB = async (userId: string, query: Record<string, unknown>) => {
-  const municipality = await prisma.municipality.findUnique({
-    where: { userId },
+  const user = await prisma.user.findUnique({ 
+    where: { id: userId },
+    include: {
+      Municipality: true,
+      staffMunicipality: true
+    }
   });
+  
+  const municipality = user?.Municipality || user?.staffMunicipality;
 
   if (!municipality) {
     throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
   }
 
-  const queryBuilder = new QueryBuilder(prisma.user, query)
-    .search(["fullName", "email"])
-    .rawFilter({ municipalityId: municipality.id, isDeleted: false })
-    .sort()
-    .paginate()
-    .fields()
-    .include({
-      assignedProperties: {
-        take: 3 // Show few properties in list view
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    isDeleted: false,
+    OR: [
+      { municipalityId: municipality.id },
+      {
+        role: { in: [UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        assignedProperties: {
+          some: { municipalityId: municipality.id }
+        }
       }
-    });
+    ]
+  };
 
-  const result = await queryBuilder.execute();
-  const meta = await queryBuilder.countTotal();
+  const result = await prisma.user.findMany({
+    where,
+    include: {
+      Profile: true,
+      assignedProperties: true
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit
+  });
 
-  return { meta, data: result };
+  const total = await prisma.user.count({ where });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit)
+    },
+    data: result
+  };
 };
 
 // ── Get Single Staff Details ───────────────────────────────────────────────
@@ -192,6 +222,64 @@ const getSingleStaffFromDB = async (staffId: string) => {
   return staff;
 };
 
+// ── Get my Municipality External Professionals ─────────────────────────────
+const getMyProfessionalsFromDB = async (userId: string, query: Record<string, unknown>) => {
+  const user = await prisma.user.findUnique({ 
+    where: { id: userId },
+    include: {
+      Municipality: true,
+      staffMunicipality: true
+    }
+  });
+
+  const municipality = user?.Municipality || user?.staffMunicipality;
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    role: { in: [UserRole.CONTRACTOR, UserRole.REALTOR, UserRole.INSPECTOR, UserRole.LENDER, UserRole.COMMUNITY_PARTNER, UserRole.BUYER, UserRole.SELLER, UserRole.USER] },
+    assignedProperties: {
+      some: {
+        municipalityId: municipality.id
+      }
+    },
+    isDeleted: false
+  };
+
+  const result = await prisma.user.findMany({
+    where,
+    include: {
+      Profile: true,
+      assignedProperties: {
+        where: {
+          municipalityId: municipality.id
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit
+  });
+
+  const total = await prisma.user.count({ where });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit)
+    },
+    data: result
+  };
+};
+
 export const MunicipalityService = {
   getAllMunicipalitiesFromDB,
   getSingleMunicipalityFromDB,
@@ -200,5 +288,6 @@ export const MunicipalityService = {
   deleteMunicipalityFromDB,
   getMyStaffsFromDB,
   getSingleStaffFromDB,
+  getMyProfessionalsFromDB,
 };
 

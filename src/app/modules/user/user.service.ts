@@ -179,6 +179,9 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
   if (payload?.experience) profileData.experience = payload.experience;
   if (payload?.specialization) profileData.specialization = payload.specialization;
   if (payload?.certification) profileData.certification = payload.certification;
+  if (payload?.internalRole) profileData.internalRole = payload.internalRole;
+  if (payload?.department) profileData.department = payload.department;
+  if (payload?.organization) profileData.organization = payload.organization;
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -211,6 +214,9 @@ const updateUserProfileIntoDB = async (userId: string, payload: Partial<any>) =>
           experience: true,
           specialization: true,
           certification: true,
+          internalRole: true,
+          department: true,
+          organization: true,
         },
       },
     },
