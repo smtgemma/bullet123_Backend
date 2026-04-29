@@ -1,6 +1,5 @@
 import cors from "cors";
 import path from "path";
-
 import router from "./app/routes";
 import cookieParser from "cookie-parser";
 import notFound from "./app/middlewares/notFound";
@@ -17,7 +16,7 @@ app.use(
       "http://localhost:4041",
       "http://localhost:4042",
       "http://localhost:4043",
-      "http://187.124.93.15:4044"
+      "http://187.124.93.15:4044",
     ],
     credentials: true,
   }),
@@ -43,4 +42,3 @@ app.use(globalErrorHandler);
 app.use(notFound);
 
 export default app;
-//
