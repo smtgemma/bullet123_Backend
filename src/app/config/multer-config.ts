@@ -153,7 +153,11 @@ const imageStorage = multerS3({
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
-    const filename = `uploads/images/img_${Date.now()}_${Math.random().toString(36).substring(2)}.${file.originalname.split('.').pop()}`;
+    const isPdf = file.mimetype === "application/pdf";
+    const folder = isPdf ? "uploads/pdfs" : "uploads/images";
+    const prefix = isPdf ? "pdf" : "img";
+    const extension = file.originalname.split('.').pop();
+    const filename = `${folder}/${prefix}_${Date.now()}_${Math.random().toString(36).substring(2)}.${extension}`;
     cb(null, filename);
   },
 });
@@ -206,15 +210,15 @@ const videoStorage = multerS3({
 export const imageUpload = multer({
   storage: imageStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024, 
+    fileSize: 20 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
-    const imageTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "application/pdf"];
     
-    if (imageTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files (JPEG, PNG, GIF, WebP) are allowed") as unknown as null, false);
+      cb(new Error("Only image files (JPEG, PNG, GIF, WebP) and PDF files are allowed") as unknown as null, false);
     }
   },
 });
