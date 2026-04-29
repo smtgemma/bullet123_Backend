@@ -92,6 +92,18 @@ const getSingleStaff = catchAsync(async (req, res) => {
   });
 });
 
+const getMyProfessionals = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await MunicipalityService.getMyProfessionalsFromDB(userId, req.query);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "External professionals retrieved successfully!",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 export const MunicipalityController = {
   getAllMunicipalities,
   getSingleMunicipality,
@@ -100,4 +112,5 @@ export const MunicipalityController = {
   deleteMunicipality,
   getMyStaffs,
   getSingleStaff,
+  getMyProfessionals,
 };

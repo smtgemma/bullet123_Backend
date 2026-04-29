@@ -12,9 +12,6 @@ const router = Router();
 // Get all municipalities (public)
 router.get("/", MunicipalityController.getAllMunicipalities);
 
-// Get single municipality by ID (public)
-router.get("/:id", MunicipalityController.getSingleMunicipality);
-
 // ── Protected routes ───────────────────────────────────────────────────────
 
 // Get my municipality profile (MUNICIPALITY only)
@@ -31,10 +28,19 @@ router.get(
 );
 
 router.get(
+  "/my-professionals",
+  auth(UserRole.MUNICIPALITY),
+  MunicipalityController.getMyProfessionals
+);
+
+router.get(
   "/staffs/:id",
   auth(UserRole.MUNICIPALITY),
   MunicipalityController.getSingleStaff
 );
+
+// Get single municipality by ID (public)
+router.get("/:id", MunicipalityController.getSingleMunicipality);
 
 // Update my municipality profile (MUNICIPALITY only)
 router.patch(
