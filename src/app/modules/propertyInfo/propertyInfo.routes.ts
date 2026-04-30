@@ -11,7 +11,7 @@ const router = Router();
 
 router.post(
   "/create",
-  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN,UserRole.REALTOR),
   imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
