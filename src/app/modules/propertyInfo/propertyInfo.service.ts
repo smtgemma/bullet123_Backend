@@ -510,46 +510,27 @@ const getPropertyStatsFromDB = async (userId: string) => {
   };
 };
 
-const getUniqueTimezonesFromDB = async (userId: string) => {
-  const municipality = await prisma.municipality.findUnique({
-    where: { userId },
-  });
-
-  if (!municipality) {
-    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
-  }
-
+const getUniqueTimezonesFromDB = async () => {
   const timezones = await prisma.propertyInfo.groupBy({
     by: ["timezone"],
     where: {
-      municipalityId: municipality.id,
       NOT: { timezone: null },
     },
   });
 
   return timezones.map((t) => t.timezone);
 };
-
-const getUniqueLocationsByTimezoneFromDB = async (userId: string, timezone: string) => {
-  const municipality = await prisma.municipality.findUnique({
-    where: { userId },
-  });
-
-  if (!municipality) {
-    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
-  }
-
+const getUniqueLocationsByTimezoneFromDB = async (timezone: string) => {
   const locations = await prisma.propertyInfo.groupBy({
     by: ["zone"],
     where: {
-      municipalityId: municipality.id,
       timezone: timezone,
+      zone: { not: undefined },
     },
   });
 
   return locations.map((l) => l.zone);
 };
-
 const getPropertyDashboardDataFromDB = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },

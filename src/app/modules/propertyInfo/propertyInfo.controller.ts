@@ -115,8 +115,8 @@ const getPropertyStats = catchAsync(async (req, res) => {
 });
 
 const getUniqueTimezones = catchAsync(async (req, res) => {
-  const userId = req.user?.id as string;
-  const result = await PropertyInfoService.getUniqueTimezonesFromDB(userId);
+  // const userId = req.user?.id as string;
+  const result = await PropertyInfoService.getUniqueTimezonesFromDB();
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -128,7 +128,7 @@ const getUniqueTimezones = catchAsync(async (req, res) => {
 const getUniqueLocationsByTimezone = catchAsync(async (req, res) => {
   const userId = req.user?.id as string;
   const { timezone } = req.query;
-  const result = await PropertyInfoService.getUniqueLocationsByTimezoneFromDB(userId, timezone as string);
+  const result = await PropertyInfoService.getUniqueLocationsByTimezoneFromDB(timezone as string);
 
   sendResponse(res, {
     statusCode: status.OK,

@@ -41,7 +41,7 @@ router.get(
 
 router.get(
   "/unique-timezones",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.getUniqueTimezones
 );
 
