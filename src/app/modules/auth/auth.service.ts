@@ -264,8 +264,9 @@ const verifyOTP = async (email: string, otpCode: string, ip?: string) => {
       },
     });
 
-    // Auto-create Municipality profile if role is MUNICIPALITY
-    if (user.role === UserRole.MUNICIPALITY) {
+    // Auto-create Municipality profile if role is MUNICIPALITY, SELLER, or COMMUNITY_PARTNER
+    const rolesToCreateProfile: UserRole[] = [UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER];
+    if (rolesToCreateProfile.includes(user.role)) {
       await tx.municipality.create({
         data: {
           userId: user.id,
@@ -274,8 +275,8 @@ const verifyOTP = async (email: string, otpCode: string, ip?: string) => {
       });
 
       await SuperAdminService.logActivity({
-        action: "Municipality Approved",
-        details: `Approved ${user.fullName} onboarding`,
+        action: "Organization Approved",
+        details: `Approved ${user.fullName} (${user.role}) onboarding`,
         userId: user.id,
         ipAddress: ip
       });

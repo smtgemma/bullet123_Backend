@@ -266,6 +266,18 @@ const getPropertyReportData = catchAsync(async (req, res) => {
   });
 });
 
+const publishProperty = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const realtorId = req.user?.id as string;
+  const result = await PropertyInfoService.publishPropertyInDB(id as string, realtorId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Property published successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -283,4 +295,5 @@ export const PropertyInfoController = {
   downloadEconomicImpactPDF,
   downloadPropertyReportPDF,
   getPropertyReportData,
+  publishProperty,
 };

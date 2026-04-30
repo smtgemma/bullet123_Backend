@@ -17,7 +17,8 @@ router.post(
     UserRole.CONTRACTOR,
     UserRole.INSPECTOR,
     UserRole.LENDER,
-    UserRole.COMMUNITY_PARTNER
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.SELLER
   ),
   validateRequest(ProgressPhotoValidation.createProgressPhotoValidationSchema),
   ProgressPhotoController.uploadProgressPhoto
@@ -33,7 +34,8 @@ router.get(
     UserRole.CONTRACTOR,
     UserRole.INSPECTOR,
     UserRole.LENDER,
-    UserRole.COMMUNITY_PARTNER
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.SELLER
   ),
   ProgressPhotoController.getProgressPhotosByProperty
 );
@@ -48,7 +50,8 @@ router.get(
     UserRole.CONTRACTOR,
     UserRole.INSPECTOR,
     UserRole.LENDER,
-    UserRole.COMMUNITY_PARTNER
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.SELLER
   ),
   ProgressPhotoController.getSingleProgressPhoto
 );
@@ -63,14 +66,15 @@ router.patch(
     UserRole.CONTRACTOR,
     UserRole.INSPECTOR,
     UserRole.LENDER,
-    UserRole.COMMUNITY_PARTNER
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.SELLER
   ),
   ProgressPhotoController.updateProgressPhoto
 );
 
 router.delete(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   ProgressPhotoController.deleteProgressPhoto
 );
 

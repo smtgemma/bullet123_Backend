@@ -15,6 +15,8 @@ router.post(
     UserRole.INSPECTOR,
     UserRole.LENDER,
     UserRole.COMMUNITY_PARTNER,
+    UserRole.BUYER,
+    UserRole.SELLER,
     UserRole.SUPER_ADMIN
   ),
   MessageController.sendMessage
@@ -30,6 +32,8 @@ router.get(
     UserRole.INSPECTOR,
     UserRole.LENDER,
     UserRole.COMMUNITY_PARTNER,
+    UserRole.BUYER,
+    UserRole.SELLER,
     UserRole.SUPER_ADMIN
   ),
   MessageController.getMyConversations
@@ -45,6 +49,8 @@ router.get(
     UserRole.INSPECTOR,
     UserRole.LENDER,
     UserRole.COMMUNITY_PARTNER,
+    UserRole.BUYER,
+    UserRole.SELLER,
     UserRole.SUPER_ADMIN
   ),
   MessageController.getMessagesByProperty
@@ -60,6 +66,8 @@ router.get(
     UserRole.INSPECTOR,
     UserRole.LENDER,
     UserRole.COMMUNITY_PARTNER,
+    UserRole.BUYER,
+    UserRole.SELLER,
     UserRole.SUPER_ADMIN
   ),
   MessageController.getConversationWithUser

@@ -11,7 +11,7 @@ const router = Router();
 
 router.post(
   "/create",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
@@ -35,7 +35,7 @@ router.get(
 
 router.get(
   "/stats",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.getPropertyStats
 );
 
@@ -47,13 +47,14 @@ router.get(
 
 router.get(
   "/unique-locations",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.getUniqueLocationsByTimezone
 );
 
 router.get(
   "/dashboard-data",
   auth(
+    UserRole.SELLER,
     UserRole.MUNICIPALITY,
     UserRole.REALTOR,
     UserRole.CONTRACTOR,
@@ -68,19 +69,20 @@ router.get(
 
 router.get(
   "/economic-impact",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.getEconomicImpact
 );
 
 router.get(
   "/download-impact-pdf",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.downloadEconomicImpactPDF
 );
 
 router.get(
   "/my-properties",
   auth(
+    UserRole.SELLER,
     UserRole.MUNICIPALITY,
     UserRole.REALTOR,
     UserRole.CONTRACTOR,
@@ -100,7 +102,7 @@ router.get(
 
 router.patch(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   imageUpload.array("files", 10),
   (req, res, next) => {
     if (req.body.data) {
@@ -123,26 +125,27 @@ router.patch(
 
 router.delete(
   "/:id",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.deletePropertyInfo
 );
 
 router.patch(
   "/:id/assign-staff",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(PropertyInfoValidation.assignStaffValidationSchema),
   PropertyInfoController.assignStaff
 );
 
 router.patch(
   "/:id/remove-staff",
-  auth(UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   PropertyInfoController.removeStaff
 );
 
 router.get(
   "/:id/report",
   auth(
+    UserRole.SELLER,
     UserRole.MUNICIPALITY,
     UserRole.REALTOR,
     UserRole.CONTRACTOR,
@@ -158,6 +161,7 @@ router.get(
 router.get(
   "/:id/report-data",
   auth(
+    UserRole.SELLER,
     UserRole.MUNICIPALITY,
     UserRole.REALTOR,
     UserRole.CONTRACTOR,
@@ -168,6 +172,12 @@ router.get(
     UserRole.SUPER_ADMIN
   ),
   PropertyInfoController.getPropertyReportData
+);
+
+router.patch(
+  "/:id/publish",
+  auth(UserRole.REALTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  PropertyInfoController.publishProperty
 );
 
 export const PropertyInfoRoutes = router;

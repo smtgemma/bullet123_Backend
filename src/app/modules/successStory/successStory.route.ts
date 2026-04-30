@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { UserRole } from "@prisma/client";
 import auth from "../../middlewares/auth";
 import { SuccessStoryController } from "./successStory.controller";
 
@@ -7,7 +8,7 @@ const router = Router();
 // Create
 router.post(
   "/add",
-  auth(), // Let any authenticated user add their success story
+  auth(UserRole.REALTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN), // Restricted to Realtors and Admins
   SuccessStoryController.createSuccessStory
 );
 
@@ -15,7 +16,7 @@ router.post(
 router.get("/all", SuccessStoryController.getAllSuccessStories);
 
 // Get my own success stories
-router.get("/my-stories", auth(), SuccessStoryController.getMySuccessStories);
+router.get("/my-stories", auth(UserRole.REALTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN), SuccessStoryController.getMySuccessStories);
 
 // Get success stories of a specific professional
 router.get("/professional/:professionalId", SuccessStoryController.getSuccessStoriesByProfessional);
@@ -26,11 +27,11 @@ router.get("/:id", SuccessStoryController.getSuccessStoryById);
 // Update
 router.patch(
   "/:id",
-  auth(),
+  auth(UserRole.REALTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SuccessStoryController.updateSuccessStory
 );
 
 // Delete
-router.delete("/:id", auth(), SuccessStoryController.deleteSuccessStory);
+router.delete("/:id", auth(UserRole.REALTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN), SuccessStoryController.deleteSuccessStory);
 
 export const SuccessStoryRoutes = router;

@@ -1,4 +1,4 @@
-import { PropertyStatus } from "@prisma/client";
+import { PropertyStatus, UserRole } from "@prisma/client";
 import status from "http-status";
 import prisma from "../../utils/prisma";
 import ApiError from "../../errors/AppError";
@@ -81,7 +81,7 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
         }
       },
     });
-  
+
   if (query.vacancyStatus) {
     queryBuilder.rawFilter({ vacancyStatus: query.vacancyStatus });
   }
@@ -265,8 +265,10 @@ const getMyPropertiesFromDB = async (userId: string) => {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-  // If the user is a municipality
-  if (user.role === "MUNICIPALITY" && user.Municipality) {
+  // If the user is a Project Owner (Municipality, Seller, or Community Partner)
+  const projectOwnerRoles: UserRole[] = [UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER];
+  const isProjectOwner = projectOwnerRoles.includes(user.role);
+  if (isProjectOwner && user.Municipality) {
     return await prisma.propertyInfo.findMany({
       where: { municipalityId: user.Municipality.id },
       include: {
@@ -541,7 +543,9 @@ const getPropertyDashboardDataFromDB = async (userId: string) => {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-  const whereProperty: any = user.role === "MUNICIPALITY" && user.Municipality
+  const projectOwnerRoles: UserRole[] = [UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER];
+  const isProjectOwner = projectOwnerRoles.includes(user.role);
+  const whereProperty: any = isProjectOwner && user.Municipality
     ? { municipalityId: user.Municipality.id }
     : { assignedStaff: { some: { id: userId } } };
 
@@ -632,6 +636,30 @@ const getPropertyDashboardDataFromDB = async (userId: string) => {
     activities,
     upcomingTasks
   };
+};
+
+const publishPropertyInDB = async (id: string, realtorId: string) => {
+  const property = await prisma.propertyInfo.findUnique({
+    where: { id },
+    include: { assignedStaff: true }
+  });
+
+  if (!property) {
+    throw new ApiError(status.NOT_FOUND, "Property not found!");
+  }
+
+  // Check if the realtor is assigned to this property
+  const isAssigned = property.assignedStaff.some(staff => staff.id === realtorId);
+  if (!isAssigned) {
+    throw new ApiError(status.FORBIDDEN, "Only an assigned Realtor can publish this property!");
+  }
+
+  const result = await prisma.propertyInfo.update({
+    where: { id },
+    data: { vacancyStatus: PropertyStatus.VACANT }, // Assuming publishing means making it VACANT/Listed
+  });
+
+  return result;
 };
 
 const getEconomicImpactFromDB = async (userId: string) => {
@@ -747,4 +775,5 @@ export const PropertyInfoService = {
   getPropertyDashboardDataFromDB,
   getEconomicImpactFromDB,
   getPropertyReportDataFromDB,
+  publishPropertyInDB,
 };
