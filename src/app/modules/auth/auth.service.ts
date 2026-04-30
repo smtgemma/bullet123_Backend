@@ -573,6 +573,7 @@ const getMe = async (email: string) => {
       email: true,
       profilePic: true,
       role: true,
+      roleTitle: true,
       isVerified: true,
       isSubscribed: true,
       planExpiration: true,
@@ -709,7 +710,7 @@ export const refreshToken = async (token: string) => {
 };
 
 // ── Create Staff Account (Invited by Admin/Municipality) ──────────────────
-const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole; municipalityId: string }) => {
+const createStaffAccount = async (payload: { fullName: string; email: string; role: UserRole; municipalityId: string; roleTitle?: string }) => {
   const normalizedEmail = payload.email.toLowerCase().trim();
 
   const isUserExist = await prisma.user.findUnique({
@@ -728,6 +729,7 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
       email: normalizedEmail,
       password: tempPassword,
       role: payload.role,
+      roleTitle: payload.roleTitle,
       isVerified: false,
       municipalityId: payload.municipalityId,
     },
@@ -736,6 +738,7 @@ const createStaffAccount = async (payload: { fullName: string; email: string; ro
       fullName: true,
       email: true,
       role: true,
+      roleTitle: true,
       isVerified: true,
       municipalityId: true,
       createdAt: true,

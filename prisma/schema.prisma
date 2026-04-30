@@ -15,6 +15,7 @@ model User {
   passwordChangedAt  DateTime?
   isVerified         Boolean         @default(false)
   role               UserRole        @default(USER)
+  roleTitle          String?
   isSubscribed       Boolean         @default(false)
   isBlocked          Boolean         @default(false)
   blockReason        String?
