@@ -53,7 +53,7 @@ router.post("/resend-reset-otp", AuthController.resendResetPasswordOtp);
 
 router.post(
   "/create-staff",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MUNICIPALITY),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MUNICIPALITY,UserRole.REALTOR, UserRole.CONTRACTOR),
   AuthController.createStaffAccount,
 );
 

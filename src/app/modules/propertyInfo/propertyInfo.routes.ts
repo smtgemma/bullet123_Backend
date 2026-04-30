@@ -131,7 +131,7 @@ router.delete(
 
 router.patch(
   "/:id/assign-staff",
-  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN,UserRole.REALTOR, UserRole.CONTRACTOR),
   validateRequest(PropertyInfoValidation.assignStaffValidationSchema),
   PropertyInfoController.assignStaff
 );
