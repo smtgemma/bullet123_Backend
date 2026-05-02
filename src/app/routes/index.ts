@@ -20,6 +20,7 @@ import { QaRoutes } from "../modules/qa/qa.route";
 import { SuperAdminRoutes } from "../modules/superAdmin/superAdmin.route";
 import { imagesHostRoute } from "../utils/imagehost";
 import { NotificationsRoutes } from "../modules/Notifaction/notifaction.route";
+import { SearchRoutes } from "../modules/search/search.routes";
 
 const router = Router();
 
@@ -109,6 +110,10 @@ const moduleRoutes = [
   {
     path: "/notifications",
     route: NotificationsRoutes,
+  },
+  {
+    path: "/search",
+    route: SearchRoutes,
   },
 ];
 
