@@ -278,6 +278,17 @@ const publishProperty = catchAsync(async (req, res) => {
   });
 });
 
+const getPropertyMembers = catchAsync(async (req, res) => {
+  const userId = req.user?.id as string;
+  const result = await PropertyInfoService.getPropertyMembersFromDB(userId);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Property members retrieved successfully!",
+    data: result,
+  });
+});
+
 export const PropertyInfoController = {
   createPropertyInfo,
   getAllPropertyInfos,
@@ -296,4 +307,5 @@ export const PropertyInfoController = {
   downloadPropertyReportPDF,
   getPropertyReportData,
   publishProperty,
+  getPropertyMembers,
 };

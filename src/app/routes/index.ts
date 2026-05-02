@@ -66,6 +66,10 @@ const moduleRoutes = [
     path: "/property-infos",
     route: PropertyInfoRoutes,
   },
+  {
+    path: "/property-info",
+    route: PropertyInfoRoutes,
+  },
 
   {
     path: "/tasks",

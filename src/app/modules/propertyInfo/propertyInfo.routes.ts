@@ -96,6 +96,22 @@ router.get(
 );
 
 router.get(
+  "/members",
+  auth(
+    UserRole.SELLER,
+    UserRole.MUNICIPALITY,
+    UserRole.REALTOR,
+    UserRole.CONTRACTOR,
+    UserRole.INSPECTOR,
+    UserRole.LENDER,
+    UserRole.COMMUNITY_PARTNER,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN
+  ),
+  PropertyInfoController.getPropertyMembers
+);
+
+router.get(
   "/:id",
   PropertyInfoController.getSinglePropertyInfo
 );

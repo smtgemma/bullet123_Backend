@@ -759,6 +759,78 @@ const getPropertyReportDataFromDB = async (id: string) => {
   };
 };
 
+const getPropertyMembersFromDB = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { Municipality: true, staffMunicipality: true }
+  });
+
+  if (!user) {
+    throw new ApiError(status.NOT_FOUND, "User not found!");
+  }
+
+  const municipality = user.Municipality || user.staffMunicipality;
+
+  if (!municipality) {
+    throw new ApiError(status.NOT_FOUND, "Municipality profile not found!");
+  }
+
+  // Internal members: Staff of the municipality
+  const internalMembers = await prisma.user.findMany({
+    where: {
+      municipalityId: municipality.id,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      profilePic: true,
+      role: true,
+      Profile: {
+        select: {
+          internalRole: true,
+          phone: true,
+        }
+      }
+    }
+  });
+
+  // External members: Assigned to properties of this municipality but not in internalMembers
+  const externalMembers = await prisma.user.findMany({
+    where: {
+      assignedProperties: {
+        some: {
+          municipalityId: municipality.id
+        }
+      },
+      NOT: {
+        municipalityId: municipality.id
+      },
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      profilePic: true,
+      role: true,
+      Profile: {
+        select: {
+          phone: true,
+        }
+      }
+    }
+  });
+
+  return {
+    internalMembers,
+    externalMembers,
+    totalInternal: internalMembers.length,
+    totalExternal: externalMembers.length,
+  };
+};
+
 export const PropertyInfoService = {
   createPropertyInfoIntoDB,
   getAllPropertyInfosFromDB,
@@ -776,4 +848,5 @@ export const PropertyInfoService = {
   getEconomicImpactFromDB,
   getPropertyReportDataFromDB,
   publishPropertyInDB,
+  getPropertyMembersFromDB,
 };
