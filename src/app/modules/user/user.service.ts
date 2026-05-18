@@ -536,18 +536,6 @@ const getSingleProfessionalFromDB = async (userId: string) => {
 };
 
 const getAllOfficeMembersFromDB = async (query: Record<string, unknown>) => {
-  if (!query.searchTerm) {
-    return {
-      meta: {
-        page: 1,
-        limit: Number(query.limit) || 10,
-        total: 0,
-        totalPage: 0,
-      },
-      data: [],
-    };
-  }
-
   const include = {
     Profile: true,
     staffMunicipality: {
@@ -574,9 +562,13 @@ const getAllOfficeMembersFromDB = async (query: Record<string, unknown>) => {
 
   queryBuilder.rawFilter({
     isDeleted: false,
-    OR: [
-      { municipalityId: { not: null } },
-      { role: { in: [UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
+    AND: [
+      {
+        OR: [
+          { municipalityId: { not: null } },
+          { role: { in: [UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
+        ],
+      },
     ],
   });
 
