@@ -70,12 +70,13 @@ const deletePropertyInfo = catchAsync(async (req, res) => {
 
 const getMyProperties = catchAsync(async (req, res) => {
   const userId = req.user?.id as string;
-  const result = await PropertyInfoService.getMyPropertiesFromDB(userId);
+  const result = await PropertyInfoService.getMyPropertiesFromDB(userId, req.query);
 
   sendResponse(res, {
     statusCode: status.OK,
     message: "My properties retrieved successfully!",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

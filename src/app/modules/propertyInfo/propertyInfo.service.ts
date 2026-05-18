@@ -64,7 +64,7 @@ const getAllPropertyInfosFromDB = async (query: Record<string, unknown>) => {
   }
 
   const queryBuilder = new QueryBuilder(prisma.propertyInfo, query)
-    .search(["propertyAddress", "zone", "propertyType", "vacancyStatus"])
+    .search(["propertyAddress", "zone", "propertyType"])
     .filter(["vacancyStatus"])
     .sort()
     .paginate()
@@ -253,7 +253,7 @@ const deletePropertyInfoFromDB = async (id: string) => {
   return null;
 };
 
-const getMyPropertiesFromDB = async (userId: string) => {
+const getMyPropertiesFromDB = async (userId: string, query: Record<string, unknown>) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -265,34 +265,31 @@ const getMyPropertiesFromDB = async (userId: string) => {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-  // If the user is a Project Owner (Municipality, Seller, or Community Partner)
   const projectOwnerRoles: UserRole[] = [UserRole.MUNICIPALITY, UserRole.SELLER, UserRole.COMMUNITY_PARTNER];
   const isProjectOwner = projectOwnerRoles.includes(user.role);
+
+  const baseWhere: any = {};
   if (isProjectOwner && user.Municipality) {
-    return await prisma.propertyInfo.findMany({
-      where: { municipalityId: user.Municipality.id },
-      include: {
-        assignedStaff: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            profilePic: true,
-            role: true,
-          },
-        },
-      },
-    });
+    baseWhere.municipalityId = user.Municipality.id;
+  } else {
+    baseWhere.assignedStaff = {
+      some: { id: userId },
+    };
   }
 
-  // If the user is a staff member (assigned to properties)
-  return await prisma.propertyInfo.findMany({
-    where: {
-      assignedStaff: {
-        some: { id: userId },
-      },
-    },
-    include: {
+  // Normalize vacancyStatus to uppercase if provided in query
+  if (query.vacancyStatus && typeof query.vacancyStatus === "string") {
+    query.vacancyStatus = query.vacancyStatus.toUpperCase();
+  }
+
+  const queryBuilder = new QueryBuilder(prisma.propertyInfo, query)
+    .search(["propertyAddress", "zone", "propertyType"])
+    .filter(["vacancyStatus"])
+    .sort()
+    .paginate()
+    .fields()
+    .include({
+      municipality: true,
       assignedStaff: {
         select: {
           id: true,
@@ -302,9 +299,18 @@ const getMyPropertiesFromDB = async (userId: string) => {
           role: true,
         },
       },
-      municipality: true,
-    },
-  });
+    });
+
+  if (query.vacancyStatus) {
+    baseWhere.vacancyStatus = query.vacancyStatus;
+  }
+
+  queryBuilder.rawFilter(baseWhere);
+
+  const result = await queryBuilder.execute();
+  const meta = await queryBuilder.countTotal();
+
+  return { meta, data: result };
 };
 
 const assignStaffToPropertyInDB = async (propertyId: string, staffIds: string[]) => {
