@@ -17,6 +17,8 @@ router.get("/admin/get-all", UserController.getAllUsers);
 router.get("/professionals/all", auth(), UserController.getProfessionals);
 router.get("/professionals/:id", auth(), UserController.getSingleProfessional);
 
+router.get("/office-members/all", auth(), UserController.getAllOfficeMembers);
+
 router.get(
   "/:userId",
   auth(),

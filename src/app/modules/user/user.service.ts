@@ -535,6 +535,75 @@ const getSingleProfessionalFromDB = async (userId: string) => {
   };
 };
 
+const getAllOfficeMembersFromDB = async (query: Record<string, unknown>) => {
+  if (!query.searchTerm) {
+    return {
+      meta: {
+        page: 1,
+        limit: Number(query.limit) || 10,
+        total: 0,
+        totalPage: 0,
+      },
+      data: [],
+    };
+  }
+
+  const include = {
+    Profile: true,
+    staffMunicipality: {
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            profilePic: true,
+          },
+        },
+      },
+    },
+    assignedProperties: true,
+  };
+
+  const queryBuilder = new QueryBuilder(prisma.user, query)
+    .search(["email", "fullName", "roleTitle"])
+    .filter(["role", "municipalityId"])
+    .sort()
+    .paginate()
+    .fields()
+    .include(include);
+
+  queryBuilder.rawFilter({
+    isDeleted: false,
+    OR: [
+      { municipalityId: { not: null } },
+      { role: { in: [UserRole.MUNICIPALITY, UserRole.ADMIN, UserRole.SUPER_ADMIN] } },
+    ],
+  });
+
+  const result = await queryBuilder.execute();
+  const meta = await queryBuilder.countTotal();
+
+  const data = result.map((user: any) => {
+    const {
+      password,
+      canResetPassword,
+      isResentOtp,
+      isResetPassword,
+      resetPasswordOTP,
+      resetPasswordOTPExpiresAt,
+      passwordChangedAt,
+      ...rest
+    } = user;
+
+    return rest;
+  });
+
+  return {
+    meta,
+    data,
+  };
+};
+
 export const UserService = {
   getAllUserFromDB,
   updateUserIntoDB,
@@ -548,4 +617,6 @@ export const UserService = {
   getAllUsersFromDB,
   getProfessionalsFromDB,
   getSingleProfessionalFromDB,
+  getAllOfficeMembersFromDB,
 };
+

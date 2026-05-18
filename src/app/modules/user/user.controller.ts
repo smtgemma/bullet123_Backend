@@ -148,6 +148,16 @@ const getSingleProfessional = catchAsync(async (req, res) => {
   });
 });
 
+const getAllOfficeMembers = catchAsync(async (req, res) => {
+  const result = await UserService.getAllOfficeMembersFromDB(req.query);
+  sendResponse(res, {
+    statusCode: status.OK,
+    message: "Office members retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 export const UserController = {
   getAllUser,
   updateUser,
@@ -160,4 +170,6 @@ export const UserController = {
   getAllUsers,
   getProfessionals,
   getSingleProfessional,
+  getAllOfficeMembers,
 };
+
